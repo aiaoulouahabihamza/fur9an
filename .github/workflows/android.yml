@@ -47,24 +47,26 @@ jobs:
           # نسخ config.xml إلى جذر المشروع (وليس www)
           if [ -f config.xml ]; then
             cp config.xml /tmp/app/config.xml
-            echo "✅ Copied config.xml to project root"
+            echo "Copied config.xml to project root"
           fi
           
           # نسخ مجلد data إلى جذر المشروع (مهم للأيقونات)
           if [ -d data ]; then
             cp -r data /tmp/app/data
-            echo "✅ Copied data folder to project root"
+            echo "Copied data folder to project root"
           fi
           
           # بناء التطبيق
           cd /tmp/app
           
           # تثبيت الإضافات يدوياً لضمان سلامة التثبيت والاعتمادية الكاملة قبل البناء
-          echo "🔌 Installing Cordova plugins..."
+          echo "Installing Cordova plugins..."
           cordova plugin add cordova-plugin-geolocation --no-telemetry || true
           cordova plugin add cordova-plugin-statusbar --no-telemetry || true
           cordova plugin add cordova-plugin-splashscreen --no-telemetry || true
-          cordova plugin add cordova-plugin-local-notification --no-telemetry || true
+          
+          # تم التحديث هنا للنسخة المتوافقة
+          cordova plugin add cordova-plugin-local-notification-12 --no-telemetry || true
           
           cordova platform add android --no-telemetry
           cordova build android --debug --no-telemetry
@@ -72,10 +74,11 @@ jobs:
           # نقل ملف APK
           mkdir -p $GITHUB_WORKSPACE/artifacts
           cp platforms/android/app/build/outputs/apk/debug/*.apk $GITHUB_WORKSPACE/artifacts/mishkat-debug.apk
-          echo "✅ Build completed successfully"
+          echo "Build completed successfully"
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: mishkat-debug-apk
           path: artifacts/mishkat-debug.apk
+
