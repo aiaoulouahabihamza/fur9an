@@ -241,7 +241,6 @@ async function fetchHadithsForRange(bookId, rangeStr) {
     if (!book) return [];
 
     const apiBookId = book.apiId;
-    const url = `https://hadith-api.vercel.app/books/${apiBookId}?range=${rangeStr}`;
     const cacheKey = `${bookId}_range_${rangeStr}`;
 
     // 1. فحص ذاكرة الوصول العشوائي (RAM)
@@ -250,10 +249,11 @@ async function fetchHadithsForRange(bookId, rangeStr) {
     }
 
     // 2. فحص كاش المتصفح (Cache API) للسرعة الفائقة 0ms
+    const baseTestUrl = `https://hadith-api.vercel.app/books/${apiBookId}?range=${rangeStr}`;
     if (window.caches) {
         try {
             const cache = await window.caches.open(HADITH_CACHE_NAME);
-            const cachedResponse = await cache.match(url);
+            const cachedResponse = await cache.match(baseTestUrl);
             if (cachedResponse) {
                 const cachedData = await cachedResponse.json();
                 if (cachedData && cachedData.data && cachedData.data.hadiths) {
@@ -262,50 +262,59 @@ async function fetchHadithsForRange(bookId, rangeStr) {
                 }
             }
         } catch (e) {
-            console.warn(`⚠️ فشل التحقق من كاش الحديث للملف ${url}`, e);
+            console.warn(`⚠️ فشل التحقق من كاش الحديث`, e);
         }
     }
 
-    // 3. الجلب من الخادم السحابي API
-    try {
-        const response = await fetch(url);
-        
-        if (!response.ok) {
-             throw new Error(`Fetch failed with status: ${response.status}`);
-        }
+    // 3. قائمة بالنطاقات البديلة والأساسية للـ API لضمان بقائها عاملة 100% بدون أي انقطاع
+    const endpoints = [
+        `https://hadith-api.vercel.app/books/${apiBookId}?range=${rangeStr}`,
+        `https://hadith-api-six.vercel.app/books/${apiBookId}?range=${rangeStr}`,
+        `https://hadith-api-sultan.vercel.app/books/${apiBookId}?range=${rangeStr}`
+    ];
 
-        const clone = response.clone();
-        const resData = await response.json();
-        console.log(`📡 API Response for ${url}:`, resData);
-        
-        if (resData && resData.data && resData.data.hadiths) {
-            hadithMemoryCache.set(cacheKey, resData.data.hadiths);
+    let lastError = null;
 
-            // حفظ في كاش المتصفح للاستخدام المستقبلي دون إنترنت
-            if (window.caches) {
-                try {
-                    const cache = await window.caches.open(HADITH_CACHE_NAME);
-                    await cache.put(url, clone);
-                } catch (e) {}
+    // الجلب مع آلية إعادة المحاولة الذكية والتنقل بين الخوادم البديلة تلقائياً
+    for (const url of endpoints) {
+        let attempts = 2; // محاولتان لكل رابط لتفادي أخطاء البدء البارد
+        for (let i = 0; i < attempts; i++) {
+            try {
+                console.log(`📡 Trying to fetch hadith from: ${url} (Attempt ${i+1}/${attempts})`);
+                const response = await fetch(url);
+                
+                if (!response.ok) {
+                    throw new Error(`Server returned status: ${response.status}`);
+                }
+
+                const clone = response.clone();
+                const resData = await response.json();
+                
+                if (resData && resData.data && resData.data.hadiths) {
+                    hadithMemoryCache.set(cacheKey, resData.data.hadiths);
+
+                    // حفظ في كاش المتصفح للاستخدام المستقبلي دون إنترنت تحت الرابط الافتراضي الموحد
+                    if (window.caches) {
+                        try {
+                            const cache = await window.caches.open(HADITH_CACHE_NAME);
+                            await cache.put(baseTestUrl, clone);
+                        } catch (e) {}
+                    }
+
+                    return resData.data.hadiths;
+                } else {
+                    throw new Error("Invalid response structure from API");
+                }
+            } catch (err) {
+                console.warn(`⚠️ Failed fetch on ${url}:`, err);
+                lastError = err;
+                // انتظار قصير قبل الإعادة
+                await new Promise(resolve => setTimeout(resolve, 800));
             }
-
-            return resData.data.hadiths;
-        } else {
-             console.error(`❌ بنية بيانات غير متوقعة لـ ${url}`, JSON.stringify(resData, null, 2));
-             hadithMemoryCache.delete(cacheKey); 
-             // محاولة تنظيف الكاش في حال كانت البيانات التالفة مخزنة
-             if (window.caches) {
-                 try {
-                     const cache = await window.caches.open(HADITH_CACHE_NAME);
-                     await cache.delete(url);
-                 } catch (e) {}
-             }
-             throw new Error("Invalid API response structure");
         }
-    } catch (e) {
-        console.error(`❌ فشل تحميل كتاب الحديث المباشر لـ ${url}`, e);
-        throw e;
     }
+
+    throw lastError || new Error("Failed to fetch hadiths from all available mirrors");
 }
 
 // الأبواب الحقيقية والتاريخية المصنفة بدقة كاملة لكافة كتب السنة التسعة
@@ -877,3 +886,21 @@ window.addEventListener('scroll', () => {
 initNavigation();
 
 console.log('🌙 المشكاة - السنة النبوية الشريفة متصلة بالكامل');
+
+// التعامل مع زر الرجوع الفعلي للأندرويد (Cordova backbutton)
+document.addEventListener('deviceready', () => {
+    document.addEventListener('backbutton', (e) => {
+        if (typeof currentStage !== 'undefined') {
+            if (currentStage === 3) {
+                switchToStage2(activeBookId, true);
+                return;
+            } else if (currentStage === 2) {
+                switchToStage1(true);
+                return;
+            }
+        }
+        
+        // العودة للرئيسية
+        window.location.href = '/index.html';
+    }, false);
+}, false);

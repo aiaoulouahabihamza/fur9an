@@ -58,6 +58,14 @@ jobs:
           
           # بناء التطبيق
           cd /tmp/app
+          
+          # تثبيت الإضافات يدوياً لضمان سلامة التثبيت والاعتمادية الكاملة قبل البناء
+          echo "🔌 Installing Cordova plugins..."
+          cordova plugin add cordova-plugin-geolocation --no-telemetry || true
+          cordova plugin add cordova-plugin-statusbar --no-telemetry || true
+          cordova plugin add cordova-plugin-splashscreen --no-telemetry || true
+          cordova plugin add cordova-plugin-local-notification --no-telemetry || true
+          
           cordova platform add android --no-telemetry
           cordova build android --debug --no-telemetry
           

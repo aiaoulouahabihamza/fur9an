@@ -147,6 +147,9 @@ const prayerNames = {
 const prayerKeys = ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'];
 
 function displayPrayerTimes(timings) {
+    if (typeof checkPrayerNotifications === 'function') {
+        checkPrayerNotifications(timings);
+    }
     prayerKeys.forEach(key => {
         const timeElement = document.getElementById(`${key}Time`);
         if (timeElement && timings[key]) {
@@ -722,15 +725,297 @@ window.addEventListener('scroll', () => {
     lastScroll = currentScroll;
 });
 
+// ===== مشغل الأذان =====
+let adhanAudio = null;
+let isAdhanPlaying = false;
+
+function initAdhanPlayer() {
+    const playBtn = document.getElementById('playAdhanBtn');
+    const playText = document.getElementById('playAdhanText');
+    const adhanUrl = 'https://download.quranicaudio.com/adhan/adhan_makkah_ali_mulla.mp3';
+
+    if (!playBtn) return;
+
+    playBtn.addEventListener('click', () => {
+        if (!adhanAudio) {
+            adhanAudio = new Audio(adhanUrl);
+            adhanAudio.addEventListener('ended', () => {
+                isAdhanPlaying = false;
+                playBtn.classList.remove('playing');
+                playBtn.innerHTML = '<i class="fa-solid fa-play"></i> <span>تشغيل</span>';
+            });
+        }
+
+        if (isAdhanPlaying) {
+            adhanAudio.pause();
+            isAdhanPlaying = false;
+            playBtn.classList.remove('playing');
+            playBtn.innerHTML = '<i class="fa-solid fa-play"></i> <span>تشغيل</span>';
+        } else {
+            adhanAudio.play().then(() => {
+                isAdhanPlaying = true;
+                playBtn.classList.add('playing');
+                playBtn.innerHTML = '<i class="fa-solid fa-stop"></i> <span>إيقاف</span>';
+            }).catch(err => {
+                console.error('Adhan audio failed to play:', err);
+                showNotificationToast('تعذر تشغيل الصوت', 'فشل تحميل صوت الأذان، تأكد من اتصالك بالإنترنت.', 'fa-solid fa-circle-exclamation');
+            });
+        }
+    });
+}
+
+// ===== أذكار بعد الصلاة =====
+const postPrayerAzkar = [
+    { text: "أَسْتَغْفِرُ اللهَ (ثَلَاثًا)<br>اللَّهُمَّ أَنْتَ السَّلَامُ وَمِنْكَ السَّلَامُ، تَبَارَكْتَ ذَا الْجَلَالِ وَالْإِكْرَامِ.", count: 3, current: 0, source: "رواه مسلم" },
+    { text: "لَا إِلَهَ إِلَّا اللهُ وَحْدَهُ لَا شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ، لَا حَوْلَ وَلَا قُوَّةَ إِلَّا بِاللهِ، لَا إِلَهَ إِلَّا اللهُ، وَلَا نَعْبُدُ إِلَّا إِيَّاهُ، لَهُ النِّعْمَةُ وَلَهُ الْفَضْلُ وَلَهُ الثَّنَاءُ الْحَسَنُ.", count: 1, current: 0, source: "رواه مسلم" },
+    { text: "سُبْحَانَ اللهِ", count: 33, current: 0, source: "رواه البخاري ومسلم" },
+    { text: "الْحَمْدُ للهِ", count: 33, current: 0, source: "رواه البخاري ومسلم" },
+    { text: "اللهُ أَكْبَرُ", count: 33, current: 0, source: "رواه البخاري ومسلم" },
+    { text: "لَا إِلَهَ إِلَّا اللهُ وَحْدَهُ لَا شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ (لِتَمَامِ الْمِائَةِ)", count: 1, current: 0, source: "رواه مسلم" },
+    { text: "أَعُوذُ بِاللهِ مِنَ الشَّيْطَانِ الرَّجِيمِ<br>﴿اللَّهُ لَا إِلَهَ إِلَّا هُوَ الْحَيُّ الْقَيُّومُ لَا تَأْخُذُهُ سِنَةٌ وَلَا نَوْمٌ لَّهُ مَا فِي السَّمَاوَاتِ وَمَا فِي الْأَرْضِ مَن ذَا الَّذِي يَشْفَعُ عِندَهُ إِلَّا بِإِذْنِهِ يَعْلَمُ مَا بَيْنَ أَيْدِيهِمْ وَمَا خَلْفَهُمْ وَلَا يُحِيطُونَ بِشَيْءٍ مِّنْ عِلْمِهِ إِلَّا بِمَا شَاءَ وَسِعَ كُرْسِيُّهُ السَّمَاوَاتِ وَالْأَرْضَ وَلَا يَئُودُهُ حِفْظُهُمَا وَهُوَ الْعَلِيُّ الْعَظِيمُ﴾", count: 1, current: 0, source: "سورة البقرة - آية الكرسي (تقرأ دبر كل صلاة)" }
+];
+
+let activeAzkarIndex = 0;
+
+function renderAzkar() {
+    const slider = document.getElementById('azkarSlider');
+    if (!slider) return;
+    slider.innerHTML = '';
+    
+    postPrayerAzkar.forEach((zkr, idx) => {
+        const slide = document.createElement('div');
+        slide.className = `azkar-slide ${idx === activeAzkarIndex ? 'active' : ''}`;
+        slide.id = `azkarSlide_${idx}`;
+        
+        const textDiv = document.createElement('div');
+        textDiv.className = 'azkar-text-arabic';
+        textDiv.innerHTML = zkr.text;
+        
+        const sourceSpan = document.createElement('span');
+        sourceSpan.className = 'azkar-source';
+        sourceSpan.textContent = zkr.source;
+        
+        const counterWrapper = document.createElement('div');
+        counterWrapper.className = 'azkar-counter-wrapper';
+        
+        const countBtn = document.createElement('button');
+        countBtn.className = `btn-azkar-count ${zkr.current >= zkr.count ? 'done' : ''}`;
+        countBtn.id = `btnZkrCount_${idx}`;
+        
+        if (zkr.current >= zkr.count) {
+            countBtn.innerHTML = '<i class="fa-solid fa-check"></i> تم الانتهاء';
+        } else {
+            countBtn.innerHTML = `<i class="fa-solid fa-fingerprint"></i> <span class="count-num">${zkr.current}/${zkr.count}</span>`;
+        }
+        
+        countBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (zkr.current < zkr.count) {
+                zkr.current++;
+                if (navigator.vibrate) {
+                    navigator.vibrate(30);
+                }
+                
+                if (zkr.current >= zkr.count) {
+                    countBtn.classList.add('done');
+                    countBtn.innerHTML = '<i class="fa-solid fa-check"></i> تم الانتهاء';
+                    setTimeout(() => {
+                        if (activeAzkarIndex < postPrayerAzkar.length - 1) {
+                            navigateAzkar(1);
+                        }
+                    }, 600);
+                } else {
+                    countBtn.querySelector('.count-num').textContent = `${zkr.current}/${zkr.count}`;
+                }
+                updateAzkarProgress();
+            }
+        });
+        
+        counterWrapper.appendChild(countBtn);
+        
+        slide.appendChild(textDiv);
+        slide.appendChild(sourceSpan);
+        slide.appendChild(counterWrapper);
+        
+        slider.appendChild(slide);
+    });
+    
+    updateAzkarProgress();
+}
+
+function navigateAzkar(direction) {
+    const slides = document.querySelectorAll('.azkar-slide');
+    if (slides.length === 0) return;
+    
+    slides[activeAzkarIndex].classList.remove('active');
+    
+    activeAzkarIndex += direction;
+    if (activeAzkarIndex >= postPrayerAzkar.length) {
+        activeAzkarIndex = 0;
+    } else if (activeAzkarIndex < 0) {
+        activeAzkarIndex = postPrayerAzkar.length - 1;
+    }
+    
+    slides[activeAzkarIndex].classList.add('active');
+    updateAzkarProgress();
+}
+
+function updateAzkarProgress() {
+    const progressFill = document.getElementById('azkarProgressFill');
+    if (!progressFill) return;
+    const percentage = ((activeAzkarIndex + 1) / postPrayerAzkar.length) * 100;
+    progressFill.style.width = `${percentage}%`;
+}
+
+function initAzkarSlider() {
+    renderAzkar();
+    
+    const prevBtn = document.getElementById('prevAzkarBtn');
+    const nextBtn = document.getElementById('nextAzkarBtn');
+
+    if (prevBtn) {
+        prevBtn.addEventListener('click', () => {
+            navigateAzkar(-1);
+        });
+    }
+    if (nextBtn) {
+        nextBtn.addEventListener('click', () => {
+            navigateAzkar(1);
+        });
+    }
+}
+
+// ===== الإشعارات والتنبيهات (5 دقائق قبل الأذان) =====
+let notifiedPrayers = {};
+
+function showNotificationToast(title, body, iconClass = 'fa-solid fa-bell') {
+    const oldNotif = document.getElementById('prayerNotifToast');
+    if (oldNotif) oldNotif.remove();
+
+    const toast = document.createElement('div');
+    toast.className = 'prayer-notification-toast';
+    toast.id = 'prayerNotifToast';
+
+    toast.innerHTML = `
+        <div class="notif-content-wrapper">
+            <div class="notif-icon-wrapper">
+                <i class="${iconClass}"></i>
+            </div>
+            <div class="notif-text">
+                <span class="notif-title">${title}</span>
+                <span class="notif-body">${body}</span>
+            </div>
+        </div>
+        <button class="btn-close-notif" id="closeNotifToastBtn">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+    `;
+
+    document.body.appendChild(toast);
+
+    // إرسال إشعار نظام حقيقي على الأندرويد عبر كوردوفا (Real Native System Notification)
+    if (window.cordova && window.cordova.plugins && window.cordova.plugins.notification && window.cordova.plugins.notification.local) {
+        try {
+            window.cordova.plugins.notification.local.schedule({
+                id: Math.floor(Math.random() * 100000),
+                title: title,
+                text: body,
+                foreground: true,
+                badge: 1,
+                vibrate: true,
+                sound: true,
+                smallIcon: 'res://icon',
+                icon: 'res://icon'
+            });
+            console.log('🔔 تم إرسال إشعار نظام أندرويد حقيقي: ' + title);
+        } catch(err) {
+            console.error('❌ فشل إرسال إشعار النظام الحقيقي:', err);
+        }
+    }
+
+    try {
+        const pingAudio = new Audio('https://assets.mixkit.co/active_storage/sfx/2568/2568-84.wav');
+        pingAudio.volume = 0.5;
+        pingAudio.play();
+    } catch(e) {}
+
+    const closeBtn = document.getElementById('closeNotifToastBtn');
+    if (closeBtn) {
+        closeBtn.addEventListener('click', () => {
+            toast.style.animation = 'slideDownIn 0.3s reverse forwards';
+            setTimeout(() => toast.remove(), 300);
+        });
+    }
+
+    setTimeout(() => {
+        if (toast.parentNode) {
+            toast.style.animation = 'slideDownIn 0.3s reverse forwards';
+            setTimeout(() => toast.remove(), 300);
+        }
+    }, 15000);
+}
+
+function checkPrayerNotifications(timings) {
+    if (!timings) return;
+    
+    const now = new Date();
+    const todayStr = now.toDateString();
+    
+    prayerKeys.forEach(key => {
+        if (timings[key]) {
+            const timeParts = timings[key].split(':');
+            const prayerTime = new Date();
+            prayerTime.setHours(parseInt(timeParts[0]), parseInt(timeParts[1]), 0, 0);
+            
+            const diffMs = prayerTime - now;
+            const diffMins = Math.floor(diffMs / (1000 * 60));
+            const notifyKey = `${todayStr}_${key}`;
+            
+            if (diffMins === 5 && !notifiedPrayers[notifyKey]) {
+                notifiedPrayers[notifyKey] = true;
+                const arabicName = prayerNames[key] || key;
+                showNotificationToast(
+                    `اقترب موعد صلاة ${arabicName}`, 
+                    `متبقي 5 دقائق فقط على صلاة ${arabicName}. استعد للوضوء والصلاة.`,
+                    'fa-solid fa-clock'
+                );
+            }
+        }
+    });
+}
+
+function getFormattedTodayDate() {
+    const targetDate = new Date();
+    const day = targetDate.getDate().toString().padStart(2, '0');
+    const month = (targetDate.getMonth() + 1).toString().padStart(2, '0');
+    const year = targetDate.getFullYear();
+    return `${day}-${month}-${year}`;
+}
+
 // ===== التهيئة =====
 async function init() {
     await refreshPrayerTimes();
     
+    initAdhanPlayer();
+    initAzkarSlider();
+
     if (refreshInterval) clearInterval(refreshInterval);
     refreshInterval = setInterval(() => {
         refreshPrayerTimes();
         updateDate();
     }, 300000);
+
+    // التحقق من موعد الصلاة كل دقيقة لإرسال تنبيه الـ 5 دقائق
+    setInterval(() => {
+        const cacheKey = `cachedPrayerTimings_${currentCity.name}_${getFormattedTodayDate()}`;
+        const cached = localStorage.getItem(cacheKey);
+        if (cached) {
+            try {
+                const timings = JSON.parse(cached);
+                checkPrayerNotifications(timings);
+            } catch(e) {}
+        }
+    }, 60000);
     
     setTimeout(() => {
         if (!localStorage.getItem('prayerCity')) {
@@ -743,3 +1028,28 @@ init();
 
 console.log('🌙 المشكاة - صفحة أوقات الصلاة');
 console.log(`المدينة: ${currentCity.name}`);
+
+// التعامل مع زر الرجوع الفعلي للأندرويد (Cordova backbutton)
+document.addEventListener('deviceready', () => {
+    // طلب صلاحيات الإشعارات لنظام أندرويد 13 فما فوق
+    if (window.cordova && window.cordova.plugins && window.cordova.plugins.notification && window.cordova.plugins.notification.local) {
+        window.cordova.plugins.notification.local.hasPermission((granted) => {
+            if (!granted) {
+                window.cordova.plugins.notification.local.requestPermission((hasPermission) => {
+                    console.log('📱 صلاحية الإشعارات الأصلية في صفحة الصلاة:', hasPermission);
+                });
+            }
+        });
+    }
+
+    document.addEventListener('backbutton', (e) => {
+        const cityModal = document.getElementById('cityModal');
+        if (cityModal && cityModal.classList.contains('active')) {
+            closeCityModal();
+            return;
+        }
+        
+        // العودة للرئيسية
+        window.location.href = '/index.html';
+    }, false);
+}, false);

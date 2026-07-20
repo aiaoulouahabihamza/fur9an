@@ -87,6 +87,11 @@ async function fetchMiniPrayerTimes() {
         const savedCity = localStorage.getItem('prayerCity');
         const city = savedCity ? JSON.parse(savedCity) : { name: 'مكة المكرمة', country: 'SA' };
         
+        const miniLoc = document.getElementById('miniLocationDisplay');
+        if (miniLoc) {
+            miniLoc.innerHTML = `<i class="fa-solid fa-location-dot"></i> ${city.name}`;
+        }
+        
         const now = new Date();
         const day = now.getDate().toString().padStart(2, '0');
         const month = (now.getMonth() + 1).toString().padStart(2, '0');
@@ -371,7 +376,7 @@ function startDuaRotation() {
     duaInterval = setInterval(() => {
         const nextIndex = (duaIndex + 1) % allDua.length;
         displayDua(nextIndex);
-    }, 120000); // 2 دقيقة
+    }, 30000); // 30 ثانية (نصف دقيقة)
 }
 
 // ============================================
@@ -419,7 +424,7 @@ function startVerseRotation() {
     verseInterval = setInterval(() => {
         const nextIndex = (verseIndex + 1) % allVerses.length;
         displayVerse(nextIndex);
-    }, 120000); // 2 دقيقة
+    }, 30000); // 30 ثانية (نصف دقيقة)
 }
 
 // ============================================
@@ -566,6 +571,17 @@ document.addEventListener('DOMContentLoaded', () => {
 // التعامل مع زر الرجوع الفعلي للأندرويد (Cordova backbutton)
 document.addEventListener('deviceready', () => {
     console.log('📱 تم تحميل كوردوفا بنجاح وجاهز للتشغيل على الأندرويد');
+    
+    // طلب صلاحيات الإشعارات لنظام أندرويد 13 فما فوق
+    if (window.cordova && window.cordova.plugins && window.cordova.plugins.notification && window.cordova.plugins.notification.local) {
+        window.cordova.plugins.notification.local.hasPermission((granted) => {
+            if (!granted) {
+                window.cordova.plugins.notification.local.requestPermission((hasPermission) => {
+                    console.log('📱 صلاحية الإشعارات الأصلية:', hasPermission);
+                });
+            }
+        });
+    }
     
     document.addEventListener('backbutton', (e) => {
         // إذا كان هناك أي مودال مفتوح، نقوم بإغلاقه بدلاً من إغلاق التطبيق

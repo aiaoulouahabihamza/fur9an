@@ -902,7 +902,7 @@ async function loadTafsir(surah, verse) {
     }
 }
 
-// تنظيف النص العربي من التشكيل وعلامات الضبط المغربي الخاص برواية ورش من أجل البحث الذكي والربط
+// تنظيف وتطبيع النص العربي من التشكيل وعلامات الضبط المغربي الخاص برواية ورش من أجل البحث الذكي والربط الدقيق جداً
 function cleanArabicTextForSearch(text) {
     if (!text) return "";
     
@@ -923,6 +923,13 @@ function cleanArabicTextForSearch(text) {
     
     // إزالة التطويل (الكشيدة) كلياً لأنها تمنع المطابقة في الـ API
     clean = clean.replace(/ـ/g, "");
+    
+    // 3. تطبيع الألف والهمزات (Normalization) لضمان دقة المطابقة بنسبة 100% بين المصاحف المختلفة
+    clean = clean.replace(/[أإآٱ]/g, 'ا');
+    
+    // 4. تطبيع الياء والألف المقصورة والتاء المربوطة
+    clean = clean.replace(/ى/g, 'ي');
+    clean = clean.replace(/ة/g, 'ه');
     
     // تنظيف أي رموز غير عربية متبقية مع الإبقاء على الحروف العربية والمسافات
     clean = clean.replace(/[^\u0621-\u064A\s]/g, "");
@@ -1116,3 +1123,17 @@ async function init() {
 }
 
 init();
+
+// التعامل مع زر الرجوع الفعلي للأندرويد (Cordova backbutton)
+document.addEventListener('deviceready', () => {
+    document.addEventListener('backbutton', (e) => {
+        const tafsirModal = document.getElementById('tafsirModal');
+        if (tafsirModal && tafsirModal.style.display === 'flex') {
+            closeTafsirModal();
+            return;
+        }
+        
+        // العودة لصفحة قائمة السور
+        window.location.href = '/quran/index.html';
+    }, false);
+}, false);

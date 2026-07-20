@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<widget id="com.mishcat.app" version="2.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
+<widget id="com.mishcat.app" version="2.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0" xmlns:android="http://schemas.android.com/apk/res/android">
     <name>المشكاة</name>
     <description>تطبيق إسلامي شامل - القرآن الكريم، الأذكار، أوقات الصلاة، والسنة النبوية</description>
     <author email="info@mishcat.com" href="https://mishcat.com">فريق تطوير المشكاة</author>
@@ -28,10 +28,18 @@
         <preference name="FormatDetections" value="telephone=no" />
         <preference name="AutoHideSplashScreen" value="true" />
         <preference name="SplashScreenDelay" value="2000" />
+        
+        <!-- صلاحيات نظام أندرويد للإشعارات وجدولة الأذان والتشغيل بعد بدء الهاتف -->
+        <config-file target="AndroidManifest.xml" parent="/*">
+            <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+            <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+            <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+        </config-file>
     </platform>
     
     <!-- الإضافات المطلوبة لتحديد الموقع والتحكم بالأجهزة والتشغيل أوفلاين -->
     <plugin name="cordova-plugin-geolocation" spec="^5.0.0" />
     <plugin name="cordova-plugin-statusbar" spec="^3.0.0" />
     <plugin name="cordova-plugin-splashscreen" spec="^6.0.2" />
+    <plugin name="cordova-plugin-local-notification" spec="^0.9.0-beta.2" />
 </widget>

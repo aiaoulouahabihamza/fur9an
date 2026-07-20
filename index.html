@@ -68,10 +68,10 @@
         </section>
 
         <!-- ===== أوقات الصلاة ===== -->
-        <section class="card prayer-mini">
+        <section class="card prayer-mini" onclick="window.location.href='./prayer/index.html'" style="cursor: pointer;">
             <div class="prayer-mini-header">
                 <span><i class="fa-regular fa-clock"></i> أوقات الصلاة</span>
-                <a href="./prayer/index.html" class="btn-link">عرض الكل</a>
+                <span class="location-mini-text" id="miniLocationDisplay" style="font-size: 13px; color: var(--color-primary); font-weight: 500;"><i class="fa-solid fa-location-dot"></i> جاري التحديد...</span>
             </div>
             <div class="prayer-mini-grid" id="prayerMiniGrid">
                 <div class="prayer-mini-item"><span class="p-name">الفجر</span><span class="p-time" id="miniFajr">--</span></div>
@@ -86,7 +86,6 @@
         <section class="card recent-card">
             <div class="card-header">
                 <span><i class="fa-solid fa-clock-rotate-left"></i> آخر قراءة</span>
-                <button class="btn-link" id="viewAllRecent">عرض الكل</button>
             </div>
             <div class="recent-content" id="recentContent">
                 <div class="empty-state">
@@ -108,14 +107,6 @@
                     <span class="dua-text" id="randomDua">جاري التحميل...</span>
                 </div>
             </div>
-            <!-- نقاط التبديل -->
-            <div class="dots-container" id="duaDots">
-                <span class="dot active" data-index="0"></span>
-                <span class="dot" data-index="1"></span>
-                <span class="dot" data-index="2"></span>
-                <span class="dot" data-index="3"></span>
-                <span class="dot" data-index="4"></span>
-            </div>
         </section>
 
         <!-- ===== آية وعبرة ===== -->
@@ -128,14 +119,6 @@
                 <p class="verse-text" id="verseText">جاري التحميل...</p>
                 <span class="verse-ref" id="verseRef">--</span>
                 <p class="verse-lesson" id="verseLesson">--</p>
-            </div>
-            <!-- نقاط التبديل -->
-            <div class="dots-container" id="verseDots">
-                <span class="dot active" data-index="0"></span>
-                <span class="dot" data-index="1"></span>
-                <span class="dot" data-index="2"></span>
-                <span class="dot" data-index="3"></span>
-                <span class="dot" data-index="4"></span>
             </div>
         </section>
 
@@ -244,7 +227,7 @@
                 <span class="mishkat-popup-subtitle">التحديث الجديد v2.0.0</span>
             </div>
             <div class="mishkat-popup-body">
-                <p class="mishkat-popup-welcome">مرحباً بك في تطبيق <strong>المشكاة</strong> (الجامع سابقاً). يسعدنا أن نُقدّم لك التحديث الجديد كلياً الذي يتضمن تحسينات هندسية فائقة للأداء والاستقرار:</p>
+                <p class="mishkat-popup-welcome">مرحباً بك في تطبيق <strong>المشكاة</strong>. يسعدنا أن نُقدّم لك التحديث الجديد كلياً الذي يتضمن تحسينات هندسية فائقة للأداء والاستقرار:</p>
                 <ul class="mishkat-popup-features">
                     <li>
                         <i class="fa-solid fa-circle-check"></i>

@@ -312,3 +312,19 @@ function renderBookmarks() {
 // ===== التهيئة =====
 loadSurahs();
 console.log('🌙 المشكاة - قائمة السور - تم التحميل');
+
+// التعامل مع زر الرجوع الفعلي للأندرويد (Cordova backbutton)
+document.addEventListener('deviceready', () => {
+    document.addEventListener('backbutton', (e) => {
+        // إغلاق مودال العلامات المرجعية إن كان مفتوحاً
+        const bookmarksModal = document.getElementById('bookmarksModal');
+        if (bookmarksModal && bookmarksModal.classList.contains('active')) {
+            bookmarksModal.classList.remove('active');
+            document.body.style.overflow = '';
+            return;
+        }
+        
+        // العودة للرئيسية
+        window.location.href = '/index.html';
+    }, false);
+}, false);

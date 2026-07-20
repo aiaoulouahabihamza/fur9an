@@ -10,6 +10,7 @@
     
     <link rel="stylesheet" href="/variables.css" />
     <link rel="stylesheet" href="/prayer/style.css" />
+    <script src="../cordova.js"></script>
 </head>
 <body>
 
@@ -121,6 +122,48 @@
                 <div class="prayer-remaining" id="IshaRemaining">--</div>
             </div>
 
+        </div>
+
+        <!-- ===== مشغل الأذان ===== -->
+        <div class="adhan-player-section">
+            <div class="adhan-title-info">
+                <i class="fa-solid fa-volume-high"></i>
+                <div class="adhan-text-wrapper">
+                    <span class="adhan-title">الأذان بصوت الشيخ علي ملا</span>
+                    <span class="adhan-desc">استمع إلى أذان الحرم المكي الشريف العذب</span>
+                </div>
+            </div>
+            <div class="adhan-controls">
+                <button class="btn-play-adhan" id="playAdhanBtn">
+                    <i class="fa-solid fa-play"></i>
+                    <span id="playAdhanText">تشغيل</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- ===== أذكار بعد الصلاة ===== -->
+        <div class="prayer-azkar-section">
+            <div class="azkar-header">
+                <span class="azkar-title-main">
+                    <i class="fa-solid fa-kaaba"></i> أذكار بعد الصلاة المفروضة
+                </span>
+                <div class="azkar-nav-btns">
+                    <button class="btn-azkar-nav" id="prevAzkarBtn">
+                        <i class="fa-solid fa-chevron-right"></i>
+                    </button>
+                    <button class="btn-azkar-nav" id="nextAzkarBtn">
+                        <i class="fa-solid fa-chevron-left"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="azkar-slider-container" id="azkarSlider">
+                <!-- سيتم ملء الأذكار برمجياً للتفاعلية التامة والتحكم بالعداد -->
+            </div>
+            
+            <div class="azkar-progress-bar">
+                <div class="azkar-progress-fill" id="azkarProgressFill"></div>
+            </div>
         </div>
 
     </main>

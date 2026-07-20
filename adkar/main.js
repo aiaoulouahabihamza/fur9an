@@ -161,13 +161,9 @@ function renderCategories() {
     
     categoriesGrid.innerHTML = categories.map(cat => {
         const count = allAzkar.filter(item => item.category === cat).length;
-        const style = CATEGORY_STYLES[cat] || DEFAULT_STYLE;
         
         return `
-            <div class="category-card" data-category="${cat}">
-                <div class="category-icon-wrapper" style="background-color: ${style.bg}; color: ${style.color};">
-                    <i class="${style.icon}"></i>
-                </div>
+            <div class="category-card" data-category="${cat}" style="padding: 16px 20px;">
                 <div class="category-info">
                     <span class="category-name">${cat}</span>
                     <span class="category-count">${count} ذكر ومأثور</span>
@@ -246,7 +242,7 @@ function renderAzkar(category) {
                         <i class="fa-regular fa-copy"></i> نسخ الذكر
                     </button>
                     <button class="zekr-card-btn share-btn" data-text="${item.zekr.replace(/"/g, '&quot;')}">
-                        <i class="fa-regular fa-share-nodes"></i> مشاركة
+                        <i class="fa-solid fa-share-nodes"></i> مشاركة
                     </button>
                 </div>
             </div>
@@ -393,3 +389,16 @@ window.addEventListener('scroll', () => {
 });
 
 console.log('🌙 المشكاة - الأذكار اليومية مدمجة بالكامل');
+
+// التعامل مع زر الرجوع الفعلي للأندرويد (Cordova backbutton)
+document.addEventListener('deviceready', () => {
+    document.addEventListener('backbutton', (e) => {
+        if (typeof currentView !== 'undefined' && currentView === 'detail') {
+            switchToCategoriesView(false);
+            return;
+        }
+        
+        // العودة للرئيسية
+        window.location.href = '/index.html';
+    }, false);
+}, false);
