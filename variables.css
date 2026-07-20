@@ -1,0 +1,155 @@
+/* ==================================================================
+   المشكاة — المتغيرات العامة (خطوط + ألوان + قياسات)
+   كل تعديل هوية بصرية (لون/خط) يتم من هذا الملف فقط
+   ================================================================== */
+
+/* ---------------------------------------------------------------
+   1) الخطوط — @font-face لكل خط متاح في data/font
+   --------------------------------------------------------------- */
+@font-face {
+    font-family: 'Maghrabi';
+    src: url('./data/font/aalmaghrabi.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'DecoTypeThuluth';
+    src: url('./data/font/DecoType_Thuluth_Regular.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'DecoTypeThuluthII';
+    src: url('./data/font/quran_font.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'Amiri';
+    src: url('./data/font/Amiri-Regular.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'Cairo';
+    src: url('./data/font/Cairo-Regular.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'UthmanicHafs';
+    src: url('./data/font/HAFS_Regular.otf') format('opentype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
+:root {
+    /* -------------------------------------------------------------
+       2) الخطوط — متغيرات الاستخدام (غيّر هنا فقط لتبديل الخط بكل المشروع)
+       ------------------------------------------------------------- */
+    --font-maghrabi: 'Maghrabi';
+    --font-decotype-thuluth: 'DecoTypeThuluth';
+    --font-decotype-thuluth-ii: 'DecoTypeThuluthII';
+    --font-amiri: 'Amiri', serif;
+    --font-cairo: 'Cairo', sans-serif;
+    --font-uthmanic-hafs: 'UthmanicHafs';
+    --font-mono-digits: 'Courier New', 'Consolas', monospace; /* أرقام ثابتة العرض للعداد التنازلي */
+
+    /* الاستخدام الفعلي داخل الواجهة */
+    --font-family: var(--font-cairo);                 /* الخط العام للواجهة — Cairo متوفر فعلياً في data/font */
+    --font-family-arabic: var(--font-amiri);          /* نصوص عربية مزخرفة (آية وعبرة) */
+    --font-quran: var(--font-uthmanic-hafs);          /* أرقام/عناصر قرآنية صغيرة */
+    --font-maghribi: var(--font-maghrabi), var(--font-uthmanic-hafs), var(--font-amiri), serif; /* رسم المصحف بالخط المغربي */
+    --font-surah-title: var(--font-decotype-thuluth), var(--font-decotype-thuluth-ii), serif; /* عناوين السور */
+
+    /* -------------------------------------------------------------
+       3) الألوان — الهوية البصرية الجديدة (نسخة البيج والبترولي الهادئ)
+       ------------------------------------------------------------- */
+    --color-cream: #E8E2D5;      /* البيج الدافئ الأنيق والراقي جداً كخلفية أساسية */
+    --color-apricot: #D0CDAF;    /* ذهبي زيتوني خفيف ومطفأ جداً للزخارف الهادئة */
+    --color-slate: #88A5A5;      /* درجة بترولية فاتحة ناعمة جداً للمسات الإضافية */
+    --color-pine: #588585;       /* اللون البترولي الأساسي الهادئ للمشروع */
+    --color-olive: #698F8F;      /* درجة بترولية متوسطة متناسقة للبطاقات والتفاعلات */
+
+    --color-bg: var(--color-cream);
+    --color-bg-card: #EDEDED;    /* خلفية البطاقات الفاتحة الناعمة جداً */
+    --color-bg-secondary: #E1DBD0;
+    --color-bg-hover: #E7E1D5;
+
+    --color-text: #2A3B3B;       /* لون نصوص مريح للعين مائل للبترولي الداكن جداً */
+    --color-text-light: #588585;
+    --color-text-lighter: #88A5A5;
+
+    --color-primary: var(--color-pine);
+    --color-primary-light: var(--color-slate);
+    --color-primary-dark: #3F6161;
+
+    --color-gold: var(--color-apricot);
+    --color-gold-light: #DDDBC7;
+    --color-gold-dark: #AFAA8F;
+    --color-gold-pale: rgba(208, 205, 175, 0.12);
+
+    --color-success: #6E8F80;
+    --color-warning: var(--color-slate);
+    --color-error: #B5746C;
+
+    /* الحدود والظلال — تم تنعيمها كلياً لتتناسب مع ألوان البيج */
+    --color-border: #DDD8CD;     
+    --color-border-light: #E5E0D5;
+    --shadow: 0 4px 16px rgba(88, 133, 133, 0.03);
+    --shadow-card: 0 4px 16px rgba(88, 133, 133, 0.03);
+    --shadow-hover: 0 6px 24px rgba(88, 133, 133, 0.06);
+    --shadow-strong: 0 10px 32px rgba(88, 133, 133, 0.08);
+
+    /* -------------------------------------------------------------
+       4) القياسات
+       ------------------------------------------------------------- */
+    --radius: 16px;
+    --radius-sm: 12px;
+    --radius-lg: 20px;
+    --radius-xl: 24px;
+    --radius-full: 9999px;
+
+    --header-height: 56px;
+    --header-height-mobile: 52px;
+    --bottom-nav-height: 64px;
+    --bottom-nav-height-mobile: 60px;
+    --max-width: 560px;
+    --content-padding: 16px;
+    --content-padding-mobile: 14px;
+
+    /* تباعد الأسطر القرآنية (يُستخدم في صفحة عرض المصحف) */
+    --quran-line-height: 52px;
+    --quran-line-gap: 4px;
+
+    /* الانتقالات */
+    --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-slow: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-bounce: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+/* ===== الوضع الداكن (موحّد لكل صفحات المشروع) ===== */
+[data-theme="dark"] {
+    --color-bg: #1F2E2E;         /* بترولي داكن ومطفي مريح جداً للعين ليلاً */
+    --color-bg-card: #273A3A;    /* درجة أفتح قليلاً للبطاقات لتبرز عن الخلفية */
+    --color-bg-secondary: #223333;
+    --color-bg-hover: #2D4242;
+
+    --color-text: #E8E2D5;       /* نصوص واضحة وناعمة باللون البيج الدافئ */
+    --color-text-light: #D0CDAF;
+    --color-text-lighter: #88A5A5;
+
+    --color-border: #2F4444;
+    --color-border-light: #283B3B;
+
+    --shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+    --shadow-card: 0 4px 16px rgba(0, 0, 0, 0.25);
+    --shadow-hover: 0 6px 24px rgba(0, 0, 0, 0.35);
+    --shadow-strong: 0 10px 32px rgba(0, 0, 0, 0.45);
+}
