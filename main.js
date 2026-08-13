@@ -31,56 +31,118 @@ themeToggle.addEventListener('click', () => {
 });
 
 // ============================================
-// 2. التاريخ الهجري والمزامنة
+// 2. خوارزمية حساب التاريخ الهجري حسب البلد والموقع (مع دعم كامل للأوفلاين)
 // ============================================
+function calculateHijriDate(date = new Date()) {
+    try {
+        const formatter = new Intl.DateTimeFormat('ar-SA-u-ca-islamic-umalqura', {
+            weekday: 'long',
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric'
+        });
+        let formatted = formatter.format(date);
+        formatted = formatted.replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d));
+        formatted = formatted.replace(/،/g, '').replace(/\s*هـ\s*/g, '').replace(/\s+/g, ' ').trim();
+        if (formatted) return formatted;
+    } catch (e) {}
+
+    const d = new Date(date);
+    let day = d.getDate();
+    let month = d.getMonth() + 1;
+    let year = d.getFullYear();
+
+    if (month < 3) {
+        year -= 1;
+        month += 12;
+    }
+
+    let a = Math.floor(year / 100);
+    let b = 2 - a + Math.floor(a / 4);
+    let jd = Math.floor(365.25 * (year + 4716)) + Math.floor(30.6001 * (month + 1)) + day + b - 1524.5;
+
+    let mydays = jd - 1948440 + 10632;
+    let n = Math.floor((mydays - 1) / 10631);
+    mydays = mydays - 10631 * n + 354;
+    let j = (Math.floor((10985 - mydays) / 5316)) * (Math.floor((50 * mydays) / 17719)) + (Math.floor(mydays / 5670)) * (Math.floor((43 * mydays) / 15238));
+    mydays = mydays - (Math.floor((30 - j) / 15)) * (Math.floor((17719 * j) / 50)) - (Math.floor(j / 16)) * (Math.floor((15238 * j) / 43)) + 29;
+    let monthH = Math.floor((24 * mydays) / 709);
+    let dayH = mydays - Math.floor((709 * monthH) / 24);
+    let yearH = 30 * n + j - 30;
+
+    const hijriMonths = [
+        "محرم", "صفر", "ربيع الأول", "ربيع الآخر",
+        "جمادى الأولى", "جمادى الآخرة", "رجب", "شعبان",
+        "رمضان", "شوال", "ذو القعدة", "ذو الحجة"
+    ];
+
+    const arabicDays = [
+        "الأحد", "الإثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"
+    ];
+
+    const weekday = arabicDays[d.getDay()];
+    const hMonth = hijriMonths[monthH - 1] || hijriMonths[0];
+
+    return `${weekday} ${dayH} ${hMonth} ${yearH}`;
+}
+
 async function updateDates() {
-    // عرض التاريخ الهجري من الكاش فوراً للتشغيل الفوري السلس 0ms
+    const hijriEl = document.getElementById('hijriDate');
+    
+    // 1. حساب وتحميل أسرع تاريخ مخزن محلياً فوراً
     const cachedHijri = localStorage.getItem('cachedHijriDate');
-    if (cachedHijri) {
-        const hijriEl = document.getElementById('hijriDate');
-        if (hijriEl) hijriEl.textContent = cachedHijri;
-    } else {
+    if (cachedHijri && hijriEl) {
+        hijriEl.textContent = cachedHijri;
+    } else if (hijriEl) {
+        hijriEl.textContent = calculateHijriDate(new Date());
+    }
+
+    // 2. تجديد التاريخ الهجري بدقة حسب البلد المعتمد لمواقيت الصلاة
+    try {
+        const savedCity = localStorage.getItem('prayerCity');
+        const city = savedCity ? JSON.parse(savedCity) : { name: 'مكة المكرمة', country: 'SA' };
+
         const now = new Date();
-        try {
-            const response = await fetch(
-                `https://api.aladhan.com/v1/gToH/${now.getDate()}-${now.getMonth()+1}-${now.getFullYear()}`
-            );
-            const data = await response.json();
-            if (data.code === 200) {
-                const h = data.data.hijri;
-                const formatted = `${h.weekday.ar} ${parseInt(h.day)} ${h.month.ar} ${h.year}`;
-                const hijriEl = document.getElementById('hijriDate');
-                if (hijriEl) hijriEl.textContent = formatted;
-                localStorage.setItem('cachedHijriDate', formatted);
-            }
-        } catch (error) {
-            const hijriEl = document.getElementById('hijriDate');
-            if (hijriEl) hijriEl.textContent = 'جاري التحديث...';
+        const day = now.getDate().toString().padStart(2, '0');
+        const month = (now.getMonth() + 1).toString().padStart(2, '0');
+        const year = now.getFullYear();
+
+        let url;
+        if (city.latitude && city.longitude) {
+            url = `https://api.aladhan.com/v1/timings/${day}-${month}-${year}?latitude=${city.latitude}&longitude=${city.longitude}&method=2`;
+        } else {
+            url = `https://api.aladhan.com/v1/timingsByCity/${day}-${month}-${year}?city=${encodeURIComponent(city.name)}&country=${city.country}&method=2`;
         }
+
+        const response = await fetch(url);
+        const data = await response.json();
+        if (data.code === 200 && data.data && data.data.date && data.data.date.hijri) {
+            const h = data.data.date.hijri;
+            const formatted = `${h.weekday.ar} ${parseInt(h.day, 10)} ${h.month.ar} ${h.year}`;
+            if (hijriEl) hijriEl.textContent = formatted;
+            localStorage.setItem('cachedHijriDate', formatted);
+        }
+    } catch (error) {
+        // الاتصال مقطوع: الحفاظ على النتيجة المحسوبة أوفلاين
     }
 }
 updateDates();
 
 // ============================================
-// 3. جلب مواقيت الصلاة المصغرة
+// 3. جلب مواقيت الصلاة المصغرة (دعم كامل للأوفلاين)
 // ============================================
 async function fetchMiniPrayerTimes() {
-    // 1. محاولة تحميل أوقات الصلاة من الكاش فوراً لتجربة سريعة وبدون إنترنت
+    // تحميل أوقات الصلاة المخزنة
     const cachedTimings = localStorage.getItem('cachedPrayerTimings');
-    const cachedHijriDate = localStorage.getItem('cachedHijriDate');
     if (cachedTimings) {
         try {
             const timings = JSON.parse(cachedTimings);
-            document.getElementById('miniFajr').textContent = timings.Fajr;
-            document.getElementById('miniDhuhr').textContent = timings.Dhuhr;
-            document.getElementById('miniAsr').textContent = timings.Asr;
-            document.getElementById('miniMaghrib').textContent = timings.Maghrib;
-            document.getElementById('miniIsha').textContent = timings.Isha;
+            if (document.getElementById('miniFajr')) document.getElementById('miniFajr').textContent = timings.Fajr;
+            if (document.getElementById('miniDhuhr')) document.getElementById('miniDhuhr').textContent = timings.Dhuhr;
+            if (document.getElementById('miniAsr')) document.getElementById('miniAsr').textContent = timings.Asr;
+            if (document.getElementById('miniMaghrib')) document.getElementById('miniMaghrib').textContent = timings.Maghrib;
+            if (document.getElementById('miniIsha')) document.getElementById('miniIsha').textContent = timings.Isha;
         } catch (e) {}
-    }
-    if (cachedHijriDate) {
-        const hijriEl = document.getElementById('hijriDate');
-        if (hijriEl) hijriEl.textContent = cachedHijriDate;
     }
 
     try {
@@ -109,41 +171,78 @@ async function fetchMiniPrayerTimes() {
         
         if (data.code === 200) {
             const timings = data.data.timings;
-            document.getElementById('miniFajr').textContent = timings.Fajr;
-            document.getElementById('miniDhuhr').textContent = timings.Dhuhr;
-            document.getElementById('miniAsr').textContent = timings.Asr;
-            document.getElementById('miniMaghrib').textContent = timings.Maghrib;
-            document.getElementById('miniIsha').textContent = timings.Isha;
+            if (document.getElementById('miniFajr')) document.getElementById('miniFajr').textContent = timings.Fajr;
+            if (document.getElementById('miniDhuhr')) document.getElementById('miniDhuhr').textContent = timings.Dhuhr;
+            if (document.getElementById('miniAsr')) document.getElementById('miniAsr').textContent = timings.Asr;
+            if (document.getElementById('miniMaghrib')) document.getElementById('miniMaghrib').textContent = timings.Maghrib;
+            if (document.getElementById('miniIsha')) document.getElementById('miniIsha').textContent = timings.Isha;
             
-            // حفظ أوقات الصلاة في الكاش
-            localStorage.setItem('cachedPrayerTimings', JSON.stringify(timings));
-
-            // تحديث التاريخ الهجري وتنسيقه حسب الموقع المسترجع بدقة تامة
-            if (data.data.date && data.data.date.hijri) {
+            if (data.data && data.data.date && data.data.date.hijri) {
                 const h = data.data.date.hijri;
-                const weekday = h.weekday.ar;
-                const hDay = parseInt(h.day);
-                const hMonth = h.month.ar;
-                const hYear = h.year;
-                const formattedHijri = `${weekday} ${hDay} ${hMonth} ${hYear}`;
-                
+                const formattedHijri = `${h.weekday.ar} ${parseInt(h.day, 10)} ${h.month.ar} ${h.year}`;
                 const hijriEl = document.getElementById('hijriDate');
                 if (hijriEl) hijriEl.textContent = formattedHijri;
                 localStorage.setItem('cachedHijriDate', formattedHijri);
             }
+
+            localStorage.setItem('cachedPrayerTimings', JSON.stringify(timings));
         }
     } catch (error) {
-        console.warn('⚠️ فشل جلب أوقات الصلاة المباشرة، تم استخدام الكاش المحلي.', error);
+        console.log('وضع عدم الاتصال: استخدام الأوقات المخزنة محلياً.');
     }
 }
 fetchMiniPrayerTimes();
 
 // ============================================
-// 4. مودال المزيد
+// التحميل والتخزين المسبق لأصوات الأذان في ذاكرة التطبيق (CacheStorage)
 // ============================================
-const moreBtn = document.getElementById('moreBtn');
-const moreModal = document.getElementById('moreModal');
-const modalClose = document.getElementById('modalClose');
+function precacheAdhanAudioFiles() {
+    if ('caches' in window) {
+        const audioFiles = [
+            '/audio/adhan_makkah.mp3',
+            '/audio/adhan_qatami.mp3',
+            '/audio/adhan_afasy.mp3'
+        ];
+        caches.open('mishkat-cache-v3').then(cache => {
+            audioFiles.forEach(file => {
+                cache.match(file).then(res => {
+                    if (!res && navigator.onLine) {
+                        cache.add(file).catch(err => console.log('Precache audio info:', err));
+                    }
+                });
+            });
+        });
+    }
+}
+if (document.readyState === 'complete') {
+    precacheAdhanAudioFiles();
+} else {
+    window.addEventListener('load', precacheAdhanAudioFiles);
+}
+
+// ============================================
+// 4. التنبيهات السريعة (Toast System)
+// ============================================
+function showToast(message) {
+    let container = document.getElementById('toastContainer');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'toastContainer';
+        container.className = 'toast-container';
+        document.body.appendChild(container);
+    }
+    container.innerHTML = '';
+    const toast = document.createElement('div');
+    toast.className = 'toast';
+    toast.innerHTML = `<i class="fa-solid fa-circle-info"></i> <span>${message}</span>`;
+    container.appendChild(toast);
+
+    setTimeout(() => {
+        toast.style.animation = 'toastOut 0.25s ease forwards';
+        setTimeout(() => toast.remove(), 250);
+    }, 2500);
+}
+window.showToast = showToast;
 
 function openModal(modal) {
     if (!modal) return;
@@ -156,29 +255,6 @@ function closeModal(modal) {
     modal.classList.remove('active');
     document.body.style.overflow = '';
 }
-
-if (moreBtn) moreBtn.addEventListener('click', () => openModal(moreModal));
-if (modalClose) modalClose.addEventListener('click', () => closeModal(moreModal));
-
-if (moreModal) {
-    moreModal.addEventListener('click', (e) => {
-        if (e.target === moreModal) closeModal(moreModal);
-    });
-}
-
-document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && moreModal && moreModal.classList.contains('active')) {
-        closeModal(moreModal);
-    }
-});
-
-document.querySelectorAll('.modal-item').forEach(item => {
-    item.addEventListener('click', () => {
-        const name = item.querySelector('span')?.textContent || 'القسم';
-        alert(`جار التوجه إلى: ${name}`);
-        if (moreModal) closeModal(moreModal);
-    });
-});
 
 // ============================================
 // 5. مودال البروفايل
@@ -203,7 +279,7 @@ document.getElementById('profileSave')?.addEventListener('click', () => {
         country: document.getElementById('profileCountry')?.value || '',
     };
     localStorage.setItem('profile', JSON.stringify(data));
-    alert('تم حفظ الملف الشخصي');
+    showAppToast('تم حفظ الملف الشخصي بنجاح', 'success');
     closeModal(profileModal);
 });
 
@@ -545,16 +621,16 @@ loadDua();
 loadVerse();
 
 // ============================================
-// 17. نافذة المشكاة المنبثقة وإدارة الأندرويد
+// 17. نافذة الفرقان المنبثقة وإدارة الأندرويد
 // ============================================
 
 // عرض نافذة التحديث لمرة واحدة
 document.addEventListener('DOMContentLoaded', () => {
-    const popup = document.getElementById('mishkatUpdatePopup');
-    const closeBtn = document.getElementById('closeMishkatPopup');
+    const popup = document.getElementById('furqanUpdatePopup') || document.getElementById('mishkatUpdatePopup');
+    const closeBtn = document.getElementById('closeFurqanPopup') || document.getElementById('closeMishkatPopup');
     
     if (popup && closeBtn) {
-        const hasSeenWelcome = localStorage.getItem('mishkat_welcome_v2');
+        const hasSeenWelcome = localStorage.getItem('furqan_update_v3_5');
         if (!hasSeenWelcome) {
             setTimeout(() => {
                 popup.classList.add('active');
@@ -563,7 +639,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         closeBtn.addEventListener('click', () => {
             popup.classList.remove('active');
-            localStorage.setItem('mishkat_welcome_v2', 'true');
+            localStorage.setItem('furqan_update_v3_5', 'true');
         });
     }
 });
@@ -585,7 +661,7 @@ document.addEventListener('deviceready', () => {
     
     document.addEventListener('backbutton', (e) => {
         // إذا كان هناك أي مودال مفتوح، نقوم بإغلاقه بدلاً من إغلاق التطبيق
-        const activeModals = document.querySelectorAll('.modal-overlay.active, .mishkat-popup-overlay.active, .city-modal.active');
+        const activeModals = document.querySelectorAll('.modal-overlay.active, .furqan-popup-overlay.active, .mishkat-popup-overlay.active, .city-modal.active');
         if (activeModals.length > 0) {
             activeModals.forEach(modal => {
                 modal.classList.remove('active');
@@ -608,6 +684,5 @@ document.addEventListener('deviceready', () => {
     }, false);
 }, false);
 
-console.log('🌙 المشكاة - الصفحة الرئيسية');
-console.log('📖 تم تحميل الأدعية والآيات والتحكم بالتمرير السريع السلس');
-console.log('🔄 تتغير تلقائياً كل دقيقتين');
+console.log('✨ منصة الفرقان - الرقمية الشاملة بالهوية الزجاجية جاهزة بالكامل');
+console.log('📖 تم تحميل الأدعية والآيات بالخط المغربي الأصيل');

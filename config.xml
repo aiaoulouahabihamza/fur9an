@@ -29,11 +29,16 @@
         <preference name="AutoHideSplashScreen" value="true" />
         <preference name="SplashScreenDelay" value="2000" />
         
-        <!-- صلاحيات نظام أندرويد للإشعارات وجدولة الأذان والتشغيل بعد بدء الهاتف -->
+        <!-- صلاحيات نظام أندرويد للإشعارات وجدولة الأذان والموقع والتشغيل بالخلفية -->
         <config-file target="AndroidManifest.xml" parent="/*">
             <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
             <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
             <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+            <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
+            <uses-permission android:name="android.permission.WAKE_LOCK" />
+            <uses-permission android:name="android.permission.VIBRATE" />
+            <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+            <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
         </config-file>
     </platform>
     
@@ -41,5 +46,5 @@
     <plugin name="cordova-plugin-geolocation" spec="^5.0.0" />
     <plugin name="cordova-plugin-statusbar" spec="^3.0.0" />
     <plugin name="cordova-plugin-splashscreen" spec="^6.0.2" />
- w
+    <plugin name="cordova-plugin-local-notification" spec="^0.9.0-beta.2" />
 </widget>

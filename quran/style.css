@@ -28,23 +28,28 @@ i {
     flex-shrink: 0;
 }
 
-/* ===== الهيدر ===== */
+/* ===== الهيدر - تصميم زجاجي أنيق مدمج ===== */
 .main-header {
     position: fixed;
     top: 0;
     right: 0;
     left: 0;
     z-index: 1000;
-    background: var(--color-bg-card);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    box-shadow: var(--shadow);
-    padding: 0 var(--content-padding);
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    box-shadow: 0 2px 12px rgba(88, 133, 133, 0.05);
+    padding: 4px var(--content-padding);
     height: var(--header-height);
     display: flex;
     align-items: center;
-    border-bottom: 1px solid var(--color-border-light);
+    border-bottom: 1px solid var(--glass-border);
     transition: var(--transition);
+}
+
+[data-theme="dark"] .main-header {
+    background: var(--glass-bg-dark);
+    border-bottom: 1px solid var(--glass-border-dark);
 }
 
 .header-content {
@@ -55,15 +60,15 @@ i {
 }
 
 .back-btn {
-    background: none;
-    border: none;
-    color: var(--color-text-light);
+    background: rgba(255, 255, 255, 0.25);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: var(--color-text);
     cursor: pointer;
-    padding: 8px;
+    padding: 4px;
     border-radius: var(--radius-sm);
     transition: var(--transition);
-    width: 44px;
-    height: 44px;
+    width: 34px;
+    height: 34px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -71,7 +76,7 @@ i {
 }
 
 .back-btn i {
-    font-size: 22px;
+    font-size: 16px;
 }
 
 .header-title {
@@ -80,8 +85,8 @@ i {
 }
 
 .header-title h1 {
-    font-size: 18px;
-    font-weight: 800;
+    font-size: 17px;
+    font-weight: 600;
     color: var(--color-text);
     line-height: 1.2;
     display: flex;
@@ -201,17 +206,24 @@ i {
     align-items: center;
     justify-content: center;
     gap: 10px;
-    background: var(--color-bg-card);
-    border-radius: var(--radius);
+    background: rgba(245, 243, 238, 0.55);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    border-radius: var(--radius-lg);
     padding: 14px 20px;
-    box-shadow: var(--shadow);
+    box-shadow: 0 4px 16px rgba(88, 133, 133, 0.04);
     margin-bottom: 20px;
-    border: 1px solid var(--color-border-light);
     color: var(--color-text-light);
     font-size: 14px;
     font-weight: 600;
     text-align: center;
     line-height: 1.6;
+}
+
+[data-theme="dark"] .riwayah-note {
+    background: rgba(39, 58, 58, 0.45);
+    border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .riwayah-note i {
@@ -268,15 +280,22 @@ i {
     display: flex;
     align-items: center;
     gap: 16px;
-    background: var(--color-bg-card);
-    border-radius: var(--radius-sm);
+    background: rgba(245, 243, 238, 0.55);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    border-radius: var(--radius-lg);
     padding: 16px 18px;
-    box-shadow: var(--shadow);
+    box-shadow: 0 4px 16px rgba(88, 133, 133, 0.04);
     cursor: pointer;
     transition: var(--transition);
-    border-right: 4px solid transparent;
     position: relative;
     overflow: hidden;
+}
+
+[data-theme="dark"] .surah-item {
+    background: rgba(39, 58, 58, 0.45);
+    border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .surah-item::before {

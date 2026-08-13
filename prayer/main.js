@@ -29,15 +29,65 @@ themeToggle.addEventListener('click', () => {
 });
 
 // ===== التاريخ =====
-function updateDate() {
-    const now = new Date();
-    document.getElementById('currentDate').textContent = 
-        now.toLocaleDateString('ar-EG', { 
-            weekday: 'long', 
-            year: 'numeric', 
-            month: 'long', 
-            day: 'numeric' 
+function getOfflineHijriDate(date = new Date()) {
+    try {
+        const formatter = new Intl.DateTimeFormat('ar-SA-u-ca-islamic-umalqura', {
+            weekday: 'long',
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric'
         });
+        let formatted = formatter.format(date);
+        formatted = formatted.replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d));
+        formatted = formatted.replace(/،/g, '').replace(/\s*هـ\s*/g, '').replace(/\s+/g, ' ').trim();
+        if (formatted) return formatted;
+    } catch (e) {}
+
+    const d = new Date(date);
+    let day = d.getDate();
+    let month = d.getMonth() + 1;
+    let year = d.getFullYear();
+
+    if (month < 3) {
+        year -= 1;
+        month += 12;
+    }
+
+    let a = Math.floor(year / 100);
+    let b = 2 - a + Math.floor(a / 4);
+    let jd = Math.floor(365.25 * (year + 4716)) + Math.floor(30.6001 * (month + 1)) + day + b - 1524.5;
+
+    let mydays = jd - 1948440 + 10632;
+    let n = Math.floor((mydays - 1) / 10631);
+    mydays = mydays - 10631 * n + 354;
+    let j = (Math.floor((10985 - mydays) / 5316)) * (Math.floor((50 * mydays) / 17719)) + (Math.floor(mydays / 5670)) * (Math.floor((43 * mydays) / 15238));
+    mydays = mydays - (Math.floor((30 - j) / 15)) * (Math.floor((17719 * j) / 50)) - (Math.floor(j / 16)) * (Math.floor((15238 * j) / 43)) + 29;
+    let monthH = Math.floor((24 * mydays) / 709);
+    let dayH = mydays - Math.floor((709 * monthH) / 24);
+    let yearH = 30 * n + j - 30;
+
+    const hijriMonths = [
+        "محرم", "صفر", "ربيع الأول", "ربيع الآخر",
+        "جمادى الأولى", "جمادى الآخرة", "رجب", "شعبان",
+        "رمضان", "شوال", "ذو القعدة", "ذو الحجة"
+    ];
+
+    const arabicDays = [
+        "الأحد", "الإثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"
+    ];
+
+    const weekday = arabicDays[d.getDay()];
+    const hMonth = hijriMonths[monthH - 1] || hijriMonths[0];
+
+    return `${weekday} ${dayH} ${hMonth} ${yearH}`;
+}
+
+function updateDate() {
+    const cached = localStorage.getItem('cachedHijriDate');
+    const el = document.getElementById('currentDate');
+    if (el) {
+        el.textContent = cached || getOfflineHijriDate();
+    }
 }
 updateDate();
 
@@ -79,6 +129,110 @@ let refreshInterval = null;
 
 document.getElementById('cityDisplay').textContent = currentCity.name;
 
+// خريطة إحداثيات المدن للحساب الرياضي أوفلاين
+const cityCoords = {
+    'مكة المكرمة': { lat: 21.4225, lng: 39.8262 },
+    'المدينة المنورة': { lat: 24.4672, lng: 39.6108 },
+    'الرياض': { lat: 24.7136, lng: 46.6753 },
+    'جدة': { lat: 21.5433, lng: 39.1728 },
+    'الدمام': { lat: 26.4207, lng: 50.0888 },
+    'القاهرة': { lat: 30.0444, lng: 31.2357 },
+    'الإسكندرية': { lat: 31.2001, lng: 29.9187 },
+    'الدار البيضاء': { lat: 33.5731, lng: -7.5898 },
+    'الرباط': { lat: 34.0209, lng: -6.8416 },
+    'مراكش': { lat: 31.6295, lng: -7.9811 },
+    'طنجة': { lat: 35.7595, lng: -5.8340 },
+    'فاس': { lat: 34.0331, lng: -5.0003 },
+    'تونس': { lat: 36.8065, lng: 10.1815 },
+    'الجزائر': { lat: 36.7538, lng: 3.0588 },
+    'وهران': { lat: 35.6971, lng: -0.6308 },
+    'طرابلس': { lat: 32.8872, lng: 13.1913 },
+    'الخرطوم': { lat: 15.5007, lng: 32.5599 },
+    'دمشق': { lat: 33.5138, lng: 36.2765 },
+    'بيروت': { lat: 33.8938, lng: 35.5018 },
+    'عمان': { lat: 31.9454, lng: 35.9284 },
+    'بغداد': { lat: 33.3152, lng: 44.3661 },
+    'الكويت': { lat: 29.3759, lng: 47.9774 },
+    'الدوحة': { lat: 25.2854, lng: 51.5310 },
+    'مسقط': { lat: 23.5880, lng: 58.3829 },
+    'صنعاء': { lat: 15.3694, lng: 44.1910 },
+    'أبو ظبي': { lat: 24.4539, lng: 54.3773 },
+    'دبي': { lat: 25.2048, lng: 55.2708 },
+    'المنامة': { lat: 26.2285, lng: 50.5860 }
+};
+
+function computeOfflinePrayerTimings(city, targetDate = new Date()) {
+    let lat = city.latitude;
+    let lng = city.longitude;
+    if (!lat || !lng) {
+        const found = cityCoords[city.name];
+        if (found) {
+            lat = found.lat;
+            lng = found.lng;
+        } else {
+            lat = 21.4225;
+            lng = 39.8262;
+        }
+    }
+    
+    const tz = -targetDate.getTimezoneOffset() / 60;
+    const year = targetDate.getFullYear();
+    const month = targetDate.getMonth() + 1;
+    const day = targetDate.getDate();
+
+    let a = Math.floor((14 - month) / 12);
+    let y = year + 4800 - a;
+    let m = month + 12 * a - 3;
+    let jd = day + Math.floor((153 * m + 2) / 5) + 365 * y + Math.floor(y / 4) - Math.floor(y / 100) + Math.floor(y / 400) - 32045;
+    let d = jd - 2451545.0;
+
+    let g = (357.529 + 0.98560028 * d) % 360;
+    let q = (280.459 + 0.98564736 * d) % 360;
+    let L = (q + 1.915 * Math.sin(g * Math.PI / 180) + 0.020 * Math.sin(2 * g * Math.PI / 180)) % 360;
+
+    let e = 23.439 - 0.00000036 * d;
+    let ra = Math.atan2(Math.cos(e * Math.PI / 180) * Math.sin(L * Math.PI / 180), Math.cos(L * Math.PI / 180)) * 180 / Math.PI;
+    ra = (ra + 360) % 360;
+
+    let eqtime = (q - ra) / 15;
+    let decl = Math.asin(Math.sin(e * Math.PI / 180) * Math.sin(L * Math.PI / 180)) * 180 / Math.PI;
+
+    let dhuhr = 12 + tz - (lng / 15) - eqtime;
+
+    const getHA = (angle) => {
+        let cosHA = (Math.sin(angle * Math.PI / 180) - Math.sin(lat * Math.PI / 180) * Math.sin(decl * Math.PI / 180)) / 
+                    (Math.cos(lat * Math.PI / 180) * Math.cos(decl * Math.PI / 180));
+        if (cosHA > 1) return 2.1;
+        if (cosHA < -1) return 2.1;
+        return Math.acos(cosHA) * 180 / Math.PI / 15;
+    };
+
+    let fajrHA = getHA(-18.5);
+    let sunriseHA = getHA(-0.833);
+    let ishaHA = getHA(-17.5);
+
+    let asrAngle = -Math.atan(1 + Math.tan(Math.abs(lat - decl) * Math.PI / 180)) * 180 / Math.PI;
+    let asrHA = getHA(asrAngle);
+
+    const fmt = (hrs) => {
+        let h = Math.floor(hrs);
+        let min = Math.floor((hrs - h) * 60);
+        if (min < 0) min = 0;
+        if (h < 0) h += 24;
+        if (h >= 24) h %= 24;
+        return `${h.toString().padStart(2, '0')}:${min.toString().padStart(2, '0')}`;
+    };
+
+    return {
+        Fajr: fmt(dhuhr - fajrHA),
+        Sunrise: fmt(dhuhr - sunriseHA),
+        Dhuhr: fmt(dhuhr),
+        Asr: fmt(dhuhr + asrHA),
+        Maghrib: fmt(dhuhr + sunriseHA),
+        Isha: fmt(dhuhr + ishaHA)
+    };
+}
+
 // ===== جلب المواقيت =====
 async function fetchPrayerTimes(city, date = null) {
     const targetDate = date || new Date();
@@ -87,15 +241,28 @@ async function fetchPrayerTimes(city, date = null) {
     const year = targetDate.getFullYear();
     const dateStr = `${day}-${month}-${year}`;
     
+    // جلب طريقة الحساب من الإعدادات، الافتراضي: 0 (حسب البلد والموقع) أو حسب اختيار المستخدم
+    const calcMethod = localStorage.getItem('prayerCalcMethod') || '0';
+    
+    // تمرير طريقة الحساب للواجهة
+    const methodSelect = document.getElementById('calcMethodSelect');
+    if (methodSelect && methodSelect.value !== calcMethod) {
+        methodSelect.value = calcMethod;
+    }
+
     let url;
     if (city.latitude && city.longitude) {
-        url = `https://api.aladhan.com/v1/timings/${dateStr}?latitude=${city.latitude}&longitude=${city.longitude}&method=2`;
+        url = `https://api.aladhan.com/v1/timings/${dateStr}?latitude=${city.latitude}&longitude=${city.longitude}`;
     } else {
-        url = `https://api.aladhan.com/v1/timingsByCity/${dateStr}?city=${encodeURIComponent(city.name)}&country=${city.country}&method=2`;
+        url = `https://api.aladhan.com/v1/timingsByCity/${dateStr}?city=${encodeURIComponent(city.name)}&country=${city.country}`;
+    }
+    
+    if (calcMethod !== '0') {
+        url += `&method=${calcMethod}`;
     }
     
     // محاولة جلب أوقات الصلاة من الكاش فوراً لتشغيل سريع 0ms وبدون إنترنت
-    const cacheKey = `cachedPrayerTimings_${city.name}_${dateStr}`;
+    const cacheKey = `cachedPrayerTimings_${city.name}_${dateStr}_m${calcMethod}`;
     const cached = localStorage.getItem(cacheKey);
     if (cached) {
         try {
@@ -116,21 +283,34 @@ async function fetchPrayerTimes(city, date = null) {
         
         const timings = data.data.timings;
         
+        if (data.data && data.data.date && data.data.date.hijri) {
+            const h = data.data.date.hijri;
+            const formatted = `${h.weekday.ar} ${parseInt(h.day, 10)} ${h.month.ar} ${h.year}`;
+            const dateEl = document.getElementById('currentDate');
+            if (dateEl) dateEl.textContent = formatted;
+            localStorage.setItem('cachedHijriDate', formatted);
+        }
+
         displayPrayerTimes(timings);
         showStatus('success', `تم التحديث - ${city.name}`);
         
         // حفظ في الكاش المحلي لليوم الحالي والمدينة الحالية
         localStorage.setItem(cacheKey, JSON.stringify(timings));
-        localStorage.setItem('cachedPrayerTimings', JSON.stringify(timings)); // كاش مصغر متوافق مع الهوم
+        localStorage.setItem('cachedPrayerTimings', JSON.stringify(timings));
         return true;
     } catch (error) {
-        console.error('خطأ:', error);
+        console.warn('استخدام الحساب الرياضي الفلكي أوفلاين:', error);
         if (cached) {
             showStatus('success', `وضعية عدم الاتصال - ${city.name}`);
             return true;
         } else {
-            showStatus('error', error.message || 'حدث خطأ');
-            return false;
+            // حساب المواقيت رياضياً بدون إنترنت
+            const offlineTimings = computeOfflinePrayerTimings(city, targetDate);
+            displayPrayerTimes(offlineTimings);
+            localStorage.setItem(cacheKey, JSON.stringify(offlineTimings));
+            localStorage.setItem('cachedPrayerTimings', JSON.stringify(offlineTimings));
+            showStatus('success', `تم الحساب محلياً (أوفلاين) - ${city.name}`);
+            return true;
         }
     }
 }
@@ -146,10 +326,107 @@ const prayerNames = {
 
 const prayerKeys = ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'];
 
+// ===== أصوات المؤذنين الخمسة/الأربعة =====
+const reciterAudioMap = {
+    makkah: {
+        name: 'أذان الحرم المكي الشريف',
+        desc: 'صوت الشيخ علي ملا - الحرم المكي',
+        url: '/audio/adhan_makkah.mp3',
+        fallbackUrl: 'https://raw.githubusercontent.com/IslamAlorabI/SalatTimes-MP3Adhan/main/Adhan/adhan_makkah.mp3'
+    },
+    qatami: {
+        name: 'الشيخ ناصر القطامي',
+        desc: 'أذان مؤثر ومميز بصوت الشيخ ناصر القطامي',
+        url: '/audio/adhan_qatami.mp3',
+        fallbackUrl: 'https://raw.githubusercontent.com/IslamAlorabI/SalatTimes-MP3Adhan/main/Adhan/naser_qotami2.mp3'
+    },
+    afasy: {
+        name: 'الشيخ مشاري العفاسي',
+        desc: 'أذان بصوت القارئ الشيخ مشاري بن راشد العفاسي',
+        url: '/audio/adhan_afasy.mp3',
+        fallbackUrl: 'https://raw.githubusercontent.com/IslamAlorabI/SalatTimes-MP3Adhan/main/Adhan/alafasi_new.mp3'
+    }
+};
+
+function getSelectedReciterKey() {
+    return localStorage.getItem('selectedAdhanReciter') || 'makkah';
+}
+
+function scheduleNativePrayerNotifications(timings) {
+    if (!timings) return;
+    if (!(window.cordova && window.cordova.plugins && window.cordova.plugins.notification && window.cordova.plugins.notification.local)) {
+        return;
+    }
+    const localNotif = window.cordova.plugins.notification.local;
+
+    localNotif.hasPermission((granted) => {
+        if (!granted) {
+            localNotif.requestPermission(() => {});
+        }
+    });
+
+    const activeReciter = reciterAudioMap[getSelectedReciterKey()] || reciterAudioMap.makkah;
+
+    localNotif.cancelAll(() => {
+        const notifList = [];
+        const now = new Date();
+
+        prayerKeys.forEach((key, index) => {
+            if (timings[key]) {
+                const parts = timings[key].split(':');
+                const pDate = new Date();
+                pDate.setHours(parseInt(parts[0]), parseInt(parts[1]), 0, 0);
+
+                if (pDate <= now) {
+                    pDate.setDate(pDate.getDate() + 1);
+                }
+
+                // 1. أذان الصلاة الفعلي
+                notifList.push({
+                    id: 100 + index + 1,
+                    title: `أذان صلاة ${prayerNames[key]}`,
+                    text: `حان الآن موعد أذان صلاة ${prayerNames[key]} في ${currentCity.name}. (${activeReciter.name})`,
+                    trigger: { at: pDate },
+                    foreground: true,
+                    vibrate: true,
+                    sound: true,
+                    priority: 2,
+                    smallIcon: 'res://icon',
+                    icon: 'res://icon',
+                    data: { prayer: key, reciterUrl: activeReciter.url }
+                });
+
+                // 2. تنبيه قبل الصلاة بـ 5 دقائق
+                const preDate = new Date(pDate.getTime() - 5 * 60 * 1000);
+                if (preDate > now) {
+                    notifList.push({
+                        id: 200 + index + 1,
+                        title: `اقتربت صلاة ${prayerNames[key]}`,
+                        text: `متبقي 5 دقائق فقط على أذان صلاة ${prayerNames[key]} في ${currentCity.name}. استعد للوضوء والصلاة.`,
+                        trigger: { at: preDate },
+                        foreground: true,
+                        vibrate: true,
+                        sound: true,
+                        priority: 1,
+                        smallIcon: 'res://icon',
+                        icon: 'res://icon'
+                    });
+                }
+            }
+        });
+
+        if (notifList.length > 0) {
+            localNotif.schedule(notifList);
+            console.log('📱 [أندرويد] تم جدولة إشعارات الأذان بالنظام الأصلي بنجاح:', notifList.length);
+        }
+    });
+}
+
 function displayPrayerTimes(timings) {
     if (typeof checkPrayerNotifications === 'function') {
         checkPrayerNotifications(timings);
     }
+    scheduleNativePrayerNotifications(timings);
     prayerKeys.forEach(key => {
         const timeElement = document.getElementById(`${key}Time`);
         if (timeElement && timings[key]) {
@@ -330,128 +607,40 @@ function showModalStatus(type, message) {
     }
 }
 
-// تحديد الموقع الاحتياطي فائق الدقة باستخدام الـ IP والإحداثيات الجغرافية المباشرة
+// تم إيقاف تحديد الموقع الاحتياطي عبر الـ IP (الشبكة) بناءً على طلب المستخدم الصارم
 async function detectLocationByIP(isFromModal = false) {
     if (isFromModal) {
-        showModalStatus('loading', '<i class="fa-solid fa-circle-notch fa-spin"></i> جاري تحديد الإحداثيات التقريبية عبر الشبكة...');
+        showModalStatus('error', '<i class="fa-solid fa-triangle-exclamation"></i> عذراً، تحديد الموقع عبر الشبكة (IP) مرفوض. يرجى تفعيل الـ GPS (تحديد الموقع الدقيق) فقط.');
+        setModalButtonLoading(false);
     } else {
-        showStatus('loading', 'جاري تحديد الإحداثيات التقريبية عبر الشبكة...');
+        showStatus('error', 'تحديد الموقع عبر الشبكة مرفوض، يرجى تفعيل الـ GPS.');
     }
     
-    let lat = null;
-    let lng = null;
-    let countryCode = 'MA';
-    let cityName = '';
-
-    // 1. محاولة جلب الإحداثيات الدقيقة من ipwho.is
-    try {
-        const response = await fetch('https://ipwho.is/');
-        const data = await response.json();
-        if (data && data.success) {
-            lat = data.latitude;
-            lng = data.longitude;
-            countryCode = data.country_code || 'MA';
-            cityName = data.city || '';
-        }
-    } catch (e) {
-        console.warn('فشل جلب الموقع من ipwho.is، تجربة البديل:', e);
-    }
-
-    // 2. البديل الثاني: ipapi.co
-    if (lat === null) {
-        try {
-            const response = await fetch('https://ipapi.co/json/');
-            const data = await response.json();
-            if (data && data.latitude) {
-                lat = data.latitude;
-                lng = data.longitude;
-                countryCode = data.country_code || 'MA';
-                cityName = data.city || '';
-            }
-        } catch (e) {
-            console.error('فشل جلب الموقع من البديل الثاني أيضاً:', e);
-        }
-    }
-
-    if (lat !== null && lng !== null) {
-        // تعريب اسم المدينة بشكل تلقائي واحترافي عبر الإحداثيات المكتشفة بالـ IP
-        try {
-            const response = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lng}&localityLanguage=ar`);
-            const data = await response.json();
-            cityName = data.city || data.locality || data.principalSubdivision || cityName;
-            countryCode = data.countryCode || countryCode;
-        } catch (error) {
-            console.warn('فشل تعريب اسم المدينة، استخدام الاسم الحالي:', error);
-        }
-
-        if (!cityName || cityName.trim() === '') {
-            cityName = 'موقعي الحالي';
-        }
-
-        // حفظ وتفعيل الموقع عبر الإحداثيات الدقيقة لضمان توافق 100% لمواقيت الصلاة
-        await handleLocationSuccess(cityName, countryCode, lat, lng);
-
-        const inIframe = window.self !== window.top;
-        if (isFromModal) {
-            let successHTML = `<div style="margin-bottom: 8px;"><i class="fa-solid fa-circle-check"></i> تم تحديد موقعك تقديرياً بنجاح: <strong>${cityName}</strong></div>`;
-            if (inIframe) {
-                successHTML += `
-                    <div style="font-size: 11px; opacity: 0.9; line-height: 1.4; border-top: 1px dashed rgba(46, 204, 113, 0.3); padding-top: 6px; margin-top: 6px;">
-                        <span style="color:#f39c12;"><i class="fa-solid fa-triangle-exclamation"></i> تنبيه:</span> المتصفح يمنع تحديد الـ GPS الدقيق داخل إطار المعاينة. 
-                        <br>
-                        <a href="${window.location.href}" target="_blank" style="color: #3498db; text-decoration: underline; font-weight: bold; display: inline-block; margin-top: 4px;">
-                            <i class="fa-solid fa-up-right-from-square"></i> افتح التطبيق في نافذة مستقلة لتفعيل الـ GPS
-                        </a>
-                    </div>
-                `;
-            }
-            showModalStatus('success', successHTML);
-            setModalButtonLoading(false);
-            
-            setTimeout(() => {
-                closeCityModal();
-                showModalStatus('hide', '');
-            }, inIframe ? 5000 : 2000);
-        } else {
-            showStatus('success', `تم تحديد الموقع تقديرياً: ${cityName}`);
-        }
-        return true;
-    }
-    
-    // إذا فشل كل شيء، نستخدم مكة المكرمة
+    // استخدام مكة المكرمة كخيار افتراضي في حال عدم وجود الـ GPS
     const fallbackCity = cities[0];
     await handleLocationSuccess(fallbackCity.name, fallbackCity.country, fallbackCity.latitude, fallbackCity.longitude);
-    if (isFromModal) {
-        showModalStatus('error', 'تعذر تحديد موقعك تلقائياً، تم استخدام مكة المكرمة كافتراضي.');
-        setModalButtonLoading(false);
-    }
     return false;
 }
 
 function detectLocation(isFromModal = false) {
     if (isFromModal) {
         setModalButtonLoading(true);
-        showModalStatus('loading', '<i class="fa-solid fa-spinner fa-spin"></i> يرجى إعطاء إذن الموقع الجغرافي إذا ظهر لك طلب الإذن في المتصفح...');
+        showModalStatus('loading', '<i class="fa-solid fa-spinner fa-spin"></i> يرجى إعطاء إذن الموقع الجغرافي عالي الدقة (GPS)...');
     } else {
-        showStatus('loading', 'جاري تحديد الموقع الجغرافي عبر الـ GPS...');
+        showStatus('loading', 'جاري تحديد الموقع الجغرافي عالي الدقة عبر الـ GPS...');
     }
     
     if (!navigator.geolocation) {
-        console.warn('المتصفح لا يدعم تحديد الموقع، جاري التحويل للموقع عبر الشبكة...');
+        console.warn('المتصفح لا يدعم GPS المباشر، جاري التحديد الذكي عبر الشبكة...');
+        showNativeLocationErrorAlert('خدمة الـ GPS غير مدعومة في هذا الجهاز، تم استخدام التحديد عبر الشبكة.');
         detectLocationByIP(isFromModal);
         return;
     }
-    
-    const optionsCached = {
-        enableHighAccuracy: false,
-        timeout: 2500,
-        maximumAge: 86400000 // حتى 24 ساعة مضت للحصول على موقع فوري ومخزن
-    };
 
     const optionsFresh = {
-        enableHighAccuracy: true,
-        timeout: 8000, // مهلة 8 ثوانٍ للحصول على GPS دقيق جداً من الهواتف والأجهزة
-        maximumAge: 0
+        enableHighAccuracy: true, // تفعيل الدقة العالية المباشرة
+        timeout: 10000,           // مهلة 10 ثوانٍ لالتقاط إشارة GPS
+        maximumAge: 0             // موقع جديد تماماً بدقة متناهية
     };
 
     const successCallback = async (position) => {
@@ -459,9 +648,9 @@ function detectLocation(isFromModal = false) {
         const lng = position.coords.longitude;
         
         if (isFromModal) {
-            showModalStatus('loading', '<i class="fa-solid fa-circle-notch fa-spin"></i> تم التقاط الإحداثيات بنجاح، جاري استخراج اسم المدينة...');
+            showModalStatus('loading', '<i class="fa-solid fa-circle-notch fa-spin"></i> تم التقاط إحداثيات GPS بنجاح، جاري استخراج اسم المدينة...');
         } else {
-            showStatus('loading', 'تم تحديد الإحداثيات، جاري تحديد المدينة...');
+            showStatus('loading', 'تم تحديد إحداثيات GPS بنجاح، جاري تحديد المدينة...');
         }
         
         let cityName = '';
@@ -477,7 +666,7 @@ function detectLocation(isFromModal = false) {
             console.warn('فشل جلب اسم المدينة من BigDataCloud، سنحاول عبر البديل:', error);
         }
         
-        // 2. المحاولة الثانية لجلب اسم المدينة عبر OpenStreetMap (Nominatim) كبديل قوي يدعم العربية بالكامل وبدقة فائقة
+        // 2. المحاولة الثانية لجلب اسم المدينة عبر OpenStreetMap (Nominatim)
         if (!cityName || cityName.trim() === '') {
             try {
                 const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=10&accept-language=ar`, {
@@ -493,7 +682,6 @@ function detectLocation(isFromModal = false) {
             }
         }
         
-        // قيمة افتراضية في أسوأ الحالات لعدم تعطل التطبيق
         if (!cityName) {
             cityName = 'موقعي الحالي';
         }
@@ -501,7 +689,7 @@ function detectLocation(isFromModal = false) {
         await handleLocationSuccess(cityName, countryCode, lat, lng);
         
         if (isFromModal) {
-            showModalStatus('success', `<i class="fa-solid fa-circle-check"></i> تم تحديد الموقع بنجاح: <strong>${cityName}</strong>`);
+            showModalStatus('success', `<i class="fa-solid fa-circle-check"></i> تم تحديد الموقع بالـ GPS بنجاح: <strong>${cityName}</strong>`);
             setModalButtonLoading(false);
             setTimeout(() => {
                 closeCityModal();
@@ -511,40 +699,46 @@ function detectLocation(isFromModal = false) {
     };
 
     const handleFinalError = (error) => {
-        console.warn('خطأ في الـ GPS الجغرافي، سيتم التحديد التلقائي البديل والذكي عبر الشبكة:', error);
+        console.warn('خطأ في الـ GPS الجغرافي:', error);
         
-        // بدلاً من الفشل وإظهار رسالة خطأ محبطة، نقوم بالتحديد التلقائي فائق الذكاء عبر الـ IP
+        let errorMsg = 'تعذر الوصول لإحداثيات GPS. يرجى التأكد من تفعيل خدمة الموقع (GPS) في إعدادات الهاتف.';
+        if (error && error.code === 1) {
+            errorMsg = 'تم رفض إذن الوصول للموقع الجغرافي. يرجى تفعيل إذن الموقع من إعدادات تطبيق أندرويد.';
+        } else if (error && error.code === 2) {
+            errorMsg = 'موقع GPS غير متوفر حالياً. يرجى التأكد من تفعيل الموقع ثم المحاولة مجدداً.';
+        } else if (error && error.code === 3) {
+            errorMsg = 'انتهت مهلة استرجاع الموقع الجغرافي عبر الـ GPS.';
+        }
+
+        showNativeLocationErrorAlert(errorMsg);
+        
+        // الانتقال للبحث الاحتياطي المباشر عبر الشبكة لعدم تعطل تجربة المستخدم
         detectLocationByIP(isFromModal);
     };
 
-    // تنفيذ الإجراء بأمان تام وتفادي أي انهيار أو إغلاق فجائي للصفحة
     try {
-        // نبدأ بمحاولة سريعة لجلب الموقع من الكاش
         navigator.geolocation.getCurrentPosition(
             successCallback,
-            (cacheError) => {
-                console.warn('لم يتم العثور على موقع مخزن، جاري محاولة تحديد موقع دقيق...', cacheError);
-                if (isFromModal) {
-                    showModalStatus('loading', '<i class="fa-solid fa-spinner fa-spin"></i> جاري الاتصال بخدمات تحديد الموقع الجغرافي...');
-                }
-                
-                try {
-                    // إذا لم يتوفر موقع مخزن، نطلب موقعاً حديثاً دقيقاً
-                    navigator.geolocation.getCurrentPosition(
-                        successCallback,
-                        (freshError) => {
-                            handleFinalError(freshError);
-                        },
-                        optionsFresh
-                    );
-                } catch (innerErr) {
-                    handleFinalError(innerErr);
-                }
-            },
-            optionsCached
+            handleFinalError,
+            optionsFresh
         );
     } catch (outerErr) {
         handleFinalError(outerErr);
+    }
+}
+
+function showNativeLocationErrorAlert(message) {
+    if (window.navigator && window.navigator.notification && window.navigator.notification.alert) {
+        // تنبيه الأندرويد الأصلي عبر كوردوفا (Native Android Dialog)
+        window.navigator.notification.alert(
+            message,
+            null,
+            'تحديد الموقع الجغرافي',
+            'موافق'
+        );
+    } else {
+        // تنبيه التطبيق الأنيق داخل الواجهة
+        showNotificationToast('تنبيه الموقع الجغرافي', message, 'fa-solid fa-triangle-exclamation');
     }
 }
 
@@ -711,6 +905,17 @@ document.getElementById('detectLocationModalBtn').addEventListener('click', (e) 
     detectLocation(true);
 });
 
+// إعداد حدث تغيير طريقة الحساب الفلكي
+const calcMethodSelect = document.getElementById('calcMethodSelect');
+if (calcMethodSelect) {
+    calcMethodSelect.addEventListener('change', () => {
+        const method = calcMethodSelect.value;
+        localStorage.setItem('prayerCalcMethod', method);
+        // إعادة تحميل أوقات الصلاة بالمدينة الحالية
+        fetchPrayerTimes(currentCity, new Date());
+    });
+}
+
 // ===== إخفاء الهيدر =====
 let lastScroll = 0;
 const header = document.getElementById('mainHeader');
@@ -731,36 +936,92 @@ let isAdhanPlaying = false;
 
 function initAdhanPlayer() {
     const playBtn = document.getElementById('playAdhanBtn');
-    const playText = document.getElementById('playAdhanText');
-    const adhanUrl = 'https://download.quranicaudio.com/adhan/adhan_makkah_ali_mulla.mp3';
+    const reciterSelect = document.getElementById('reciterSelect');
+    const titleEl = document.getElementById('selectedReciterTitle');
 
     if (!playBtn) return;
 
-    playBtn.addEventListener('click', () => {
-        if (!adhanAudio) {
-            adhanAudio = new Audio(adhanUrl);
-            adhanAudio.addEventListener('ended', () => {
+    // تهيئة القيمة المخزنة
+    const savedReciter = getSelectedReciterKey();
+    if (reciterSelect) {
+        reciterSelect.value = savedReciter;
+        const currentData = reciterAudioMap[savedReciter] || reciterAudioMap.makkah;
+        if (titleEl) titleEl.textContent = currentData.name;
+    }
+
+    if (reciterSelect) {
+        reciterSelect.addEventListener('change', () => {
+            const chosenKey = reciterSelect.value;
+            localStorage.setItem('selectedAdhanReciter', chosenKey);
+            const chosenData = reciterAudioMap[chosenKey] || reciterAudioMap.makkah;
+            
+            if (titleEl) titleEl.textContent = chosenData.name;
+
+            // إذا كان الأذان يعمل حالياً، نوقفه
+            if (adhanAudio && isAdhanPlaying) {
+                adhanAudio.pause();
                 isAdhanPlaying = false;
                 playBtn.classList.remove('playing');
-                playBtn.innerHTML = '<i class="fa-solid fa-play"></i> <span>تشغيل</span>';
-            });
-        }
+                playBtn.innerHTML = '<i class="fa-solid fa-play"></i> <span>تجربة الأذان</span>';
+            }
+            adhanAudio = null;
 
-        if (isAdhanPlaying) {
+            // إعادة جدولة إشعارات الأذان بالصوت الجديد
+            const cacheKey = `cachedPrayerTimings_${currentCity.name}_${getFormattedTodayDate()}`;
+            const cached = localStorage.getItem(cacheKey);
+            if (cached) {
+                try {
+                    scheduleNativePrayerNotifications(JSON.parse(cached));
+                } catch(e) {}
+            }
+        });
+    }
+
+    playBtn.addEventListener('click', () => {
+        const activeKey = getSelectedReciterKey();
+        const activeData = reciterAudioMap[activeKey] || reciterAudioMap.makkah;
+
+        if (isAdhanPlaying && adhanAudio) {
             adhanAudio.pause();
             isAdhanPlaying = false;
             playBtn.classList.remove('playing');
-            playBtn.innerHTML = '<i class="fa-solid fa-play"></i> <span>تشغيل</span>';
-        } else {
-            adhanAudio.play().then(() => {
-                isAdhanPlaying = true;
-                playBtn.classList.add('playing');
-                playBtn.innerHTML = '<i class="fa-solid fa-stop"></i> <span>إيقاف</span>';
-            }).catch(err => {
-                console.error('Adhan audio failed to play:', err);
-                showNotificationToast('تعذر تشغيل الصوت', 'فشل تحميل صوت الأذان، تأكد من اتصالك بالإنترنت.', 'fa-solid fa-circle-exclamation');
-            });
+            playBtn.innerHTML = '<i class="fa-solid fa-play"></i> <span>تجربة الأذان</span>';
+            return;
         }
+
+        const tryPlayAdhan = (audioUrl, isFallback = false) => {
+            adhanAudio = new Audio(audioUrl);
+            adhanAudio.addEventListener('ended', () => {
+                isAdhanPlaying = false;
+                playBtn.classList.remove('playing');
+                playBtn.innerHTML = '<i class="fa-solid fa-play"></i> <span>تجربة الأذان</span>';
+            });
+
+            const playPromise = adhanAudio.play();
+            if (playPromise !== undefined) {
+                playPromise.then(() => {
+                    isAdhanPlaying = true;
+                    playBtn.classList.add('playing');
+                    playBtn.innerHTML = '<i class="fa-solid fa-stop"></i> <span>إيقاف الأذان</span>';
+                }).catch(err => {
+                    if (err.name === 'AbortError' || (err.message && err.message.includes('interrupted'))) {
+                        return;
+                    }
+                    console.warn(`فشل تشغيل أذان ${activeData.name} من ${audioUrl}:`, err);
+                    if (!isFallback && activeData.fallbackUrl) {
+                        console.log('جاري المحاولة عبر الرابط الاحتياطي المباشر...');
+                        tryPlayAdhan(activeData.fallbackUrl, true);
+                    } else {
+                        isAdhanPlaying = false;
+                        playBtn.classList.remove('playing');
+                        playBtn.innerHTML = '<i class="fa-solid fa-play"></i> <span>تجربة الأذان</span>';
+                        showNotificationToast('تنبيه الأذان', 'تعذر تشغيل الصوت تلقائياً، يرجى التفاعل مع الصفحة أو إلغاء كتم الصوت.', 'fa-solid fa-volume-xmark');
+                    }
+                });
+            }
+        };
+
+        tryPlayAdhan(activeData.url);
     });
 }
 
@@ -888,6 +1149,27 @@ function initAzkarSlider() {
 // ===== الإشعارات والتنبيهات (5 دقائق قبل الأذان) =====
 let notifiedPrayers = {};
 
+function playNotificationChime() {
+    try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) return;
+        const ctx = new AudioCtx();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(587.33, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.15);
+        gain.gain.setValueAtTime(0.12, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.3);
+    } catch (e) {
+        console.warn('Chime play error:', e);
+    }
+}
+
 function showNotificationToast(title, body, iconClass = 'fa-solid fa-bell') {
     const oldNotif = document.getElementById('prayerNotifToast');
     if (oldNotif) oldNotif.remove();
@@ -933,11 +1215,7 @@ function showNotificationToast(title, body, iconClass = 'fa-solid fa-bell') {
         }
     }
 
-    try {
-        const pingAudio = new Audio('https://assets.mixkit.co/active_storage/sfx/2568/2568-84.wav');
-        pingAudio.volume = 0.5;
-        pingAudio.play();
-    } catch(e) {}
+    playNotificationChime();
 
     const closeBtn = document.getElementById('closeNotifToastBtn');
     if (closeBtn) {

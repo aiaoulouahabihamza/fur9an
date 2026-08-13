@@ -1,155 +1,157 @@
 /* ==================================================================
-   المشكاة — المتغيرات العامة (خطوط + ألوان + قياسات)
-   كل تعديل هوية بصرية (لون/خط) يتم من هذا الملف فقط
+   الفرقان — الهوية الزجاجية المطفأة البترولية والعشبية
    ================================================================== */
 
-/* ---------------------------------------------------------------
-   1) الخطوط — @font-face لكل خط متاح في data/font
-   --------------------------------------------------------------- */
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&family=Amiri:ital,wght@0,400;0,700;1,400;1,700&display=swap');
+
 @font-face {
     font-family: 'Maghrabi';
     src: url('./data/font/aalmaghrabi.ttf') format('truetype');
-    font-weight: normal;
-    font-style: normal;
-    font-display: swap;
-}
-@font-face {
-    font-family: 'DecoTypeThuluth';
-    src: url('./data/font/DecoType_Thuluth_Regular.ttf') format('truetype');
-    font-weight: normal;
-    font-style: normal;
-    font-display: swap;
-}
-@font-face {
-    font-family: 'DecoTypeThuluthII';
-    src: url('./data/font/quran_font.ttf') format('truetype');
-    font-weight: normal;
-    font-style: normal;
-    font-display: swap;
+    font-weight: normal; font-style: normal; font-display: swap;
 }
 @font-face {
     font-family: 'Amiri';
     src: url('./data/font/Amiri-Regular.ttf') format('truetype');
-    font-weight: normal;
-    font-style: normal;
-    font-display: swap;
+    font-weight: normal; font-style: normal; font-display: swap;
 }
 @font-face {
     font-family: 'Cairo';
     src: url('./data/font/Cairo-Regular.ttf') format('truetype');
-    font-weight: normal;
-    font-style: normal;
-    font-display: swap;
+    font-weight: normal; font-style: normal; font-display: swap;
 }
 @font-face {
     font-family: 'UthmanicHafs';
     src: url('./data/font/HAFS_Regular.otf') format('opentype');
-    font-weight: normal;
-    font-style: normal;
-    font-display: swap;
+    font-weight: normal; font-style: normal; font-display: swap;
+}
+@font-face {
+    font-family: 'DecoTypeThuluth';
+    src: url('./data/font/DecoType_Thuluth_Regular.ttf') format('truetype');
+    font-weight: normal; font-style: normal; font-display: swap;
 }
 
 :root {
-    /* -------------------------------------------------------------
-       2) الخطوط — متغيرات الاستخدام (غيّر هنا فقط لتبديل الخط بكل المشروع)
-       ------------------------------------------------------------- */
+    /* الخطوط - الخط المغربي للقرآن الكريم حصرياً */
     --font-maghrabi: 'Maghrabi';
-    --font-decotype-thuluth: 'DecoTypeThuluth';
-    --font-decotype-thuluth-ii: 'DecoTypeThuluthII';
-    --font-amiri: 'Amiri', serif;
+    --font-maghribi: 'Maghrabi', 'UthmanicHafs', 'Amiri', serif;
     --font-cairo: 'Cairo', sans-serif;
-    --font-uthmanic-hafs: 'UthmanicHafs';
-    --font-mono-digits: 'Courier New', 'Consolas', monospace; /* أرقام ثابتة العرض للعداد التنازلي */
+    --font-amiri: 'Amiri', serif;
+    --font-quran: var(--font-maghribi);
+    --font-thuluth: 'DecoTypeThuluth', serif;
+    --font-surah-title: 'DecoTypeThuluth', serif;
+    
+    --font-family: var(--font-cairo);
+    --font-family-arabic: var(--font-amiri);
 
-    /* الاستخدام الفعلي داخل الواجهة */
-    --font-family: var(--font-cairo);                 /* الخط العام للواجهة — Cairo متوفر فعلياً في data/font */
-    --font-family-arabic: var(--font-amiri);          /* نصوص عربية مزخرفة (آية وعبرة) */
-    --font-quran: var(--font-uthmanic-hafs);          /* أرقام/عناصر قرآنية صغيرة */
-    --font-maghribi: var(--font-maghrabi), var(--font-uthmanic-hafs), var(--font-amiri), serif; /* رسم المصحف بالخط المغربي */
-    --font-surah-title: var(--font-decotype-thuluth), var(--font-decotype-thuluth-ii), serif; /* عناوين السور */
+    /* لوحة الألوان المحددة بدقة من المستخدم: #10828D | #F2F3EE | #12557B | #A3E062 */
+    --color-bg: #F2F3EE;                      /* خلفية أساسية فاتحة ونظيفة */
+    --color-bg-card: rgba(255, 255, 255, 0.75); /* أبيض زجاجي ناعم */
+    --color-bg-secondary: rgba(242, 243, 238, 0.88);
+    --color-bg-hover: rgba(16, 130, 141, 0.1); 
+    
+    --color-primary: #10828D;                 /* اللون البترولي/التركوازي الرئيسي */
+    --color-primary-light: #259AA6;           /* بترولي مريح */
+    --color-primary-dark: #12557B;            /* كحلي بترولي عميق */
+    
+    --color-herbal: #A3E062;                  /* الأخضر العشبي/الليموني النضر */
+    --color-herbal-light: #C4F082;            /* عشبي فاتح */
+    --color-herbal-dark: #7DB83C;             /* عشبي دافئ */
 
-    /* -------------------------------------------------------------
-       3) الألوان — الهوية البصرية الجديدة (نسخة البيج والبترولي الهادئ)
-       ------------------------------------------------------------- */
-    --color-cream: #E8E2D5;      /* البيج الدافئ الأنيق والراقي جداً كخلفية أساسية */
-    --color-apricot: #D0CDAF;    /* ذهبي زيتوني خفيف ومطفأ جداً للزخارف الهادئة */
-    --color-slate: #88A5A5;      /* درجة بترولية فاتحة ناعمة جداً للمسات الإضافية */
-    --color-pine: #588585;       /* اللون البترولي الأساسي الهادئ للمشروع */
-    --color-olive: #698F8F;      /* درجة بترولية متوسطة متناسقة للبطاقات والتفاعلات */
+    --color-gold: #10828D;
+    --color-gold-light: rgba(163, 224, 98, 0.25);
+    --color-gold-dark: #12557B;
 
-    --color-bg: var(--color-cream);
-    --color-bg-card: #EDEDED;    /* خلفية البطاقات الفاتحة الناعمة جداً */
-    --color-bg-secondary: #E1DBD0;
-    --color-bg-hover: #E7E1D5;
+    --color-text: #0E2A36;                    /* كحلي داكن واضح ومريح قراءته */
+    --color-text-light: #3D5A6C;             
+    --color-text-lighter: #6B8896;
 
-    --color-text: #2A3B3B;       /* لون نصوص مريح للعين مائل للبترولي الداكن جداً */
-    --color-text-light: #588585;
-    --color-text-lighter: #88A5A5;
+    --color-border: rgba(18, 85, 123, 0.14);   /* حدود زجاجية ناعمة غير منفوخة */
+    --color-border-light: rgba(163, 224, 98, 0.25);
 
-    --color-primary: var(--color-pine);
-    --color-primary-light: var(--color-slate);
-    --color-primary-dark: #3F6161;
+    /* نظام الزجاج المطفأ الهلامي (Frosted Glassmorphism) */
+    --glass-bg: rgba(242, 243, 238, 0.85);
+    --glass-card: rgba(255, 255, 255, 0.78);
+    --glass-border: 1px solid rgba(255, 255, 255, 0.75);
+    --glass-blur: blur(12px);
+    --glass-shadow: 0 6px 20px -2px rgba(18, 85, 123, 0.08);
 
-    --color-gold: var(--color-apricot);
-    --color-gold-light: #DDDBC7;
-    --color-gold-dark: #AFAA8F;
-    --color-gold-pale: rgba(208, 205, 175, 0.12);
+    --gradient-primary: linear-gradient(135deg, #10828D 0%, #12557B 100%);
+    --gradient-sky: linear-gradient(135deg, #10828D 0%, #259AA6 100%);
+    --gradient-herbal: linear-gradient(135deg, #10828D 0%, #A3E062 100%);
 
-    --color-success: #6E8F80;
-    --color-warning: var(--color-slate);
-    --color-error: #B5746C;
+    --shadow-sm: 0 1px 4px rgba(18, 85, 123, 0.05);
+    --shadow: var(--glass-shadow);
+    --shadow-card: 0 4px 16px -2px rgba(18, 85, 123, 0.07);
+    --shadow-hover: 0 8px 22px -4px rgba(16, 130, 141, 0.14);
+    --shadow-glow: 0 0 16px rgba(163, 224, 98, 0.35);
 
-    /* الحدود والظلال — تم تنعيمها كلياً لتتناسب مع ألوان البيج */
-    --color-border: #DDD8CD;     
-    --color-border-light: #E5E0D5;
-    --shadow: 0 4px 16px rgba(88, 133, 133, 0.03);
-    --shadow-card: 0 4px 16px rgba(88, 133, 133, 0.03);
-    --shadow-hover: 0 6px 24px rgba(88, 133, 133, 0.06);
-    --shadow-strong: 0 10px 32px rgba(88, 133, 133, 0.08);
-
-    /* -------------------------------------------------------------
-       4) القياسات
-       ------------------------------------------------------------- */
-    --radius: 16px;
-    --radius-sm: 12px;
-    --radius-lg: 20px;
-    --radius-xl: 24px;
+    /* تصغير وتخفيف البروز لتفادي التصميم المنفوخ */
+    --radius-sm: 8px;
+    --radius: 12px;
+    --radius-lg: 16px;
+    --radius-xl: 22px;
     --radius-full: 9999px;
 
-    --header-height: 56px;
-    --header-height-mobile: 52px;
-    --bottom-nav-height: 64px;
-    --bottom-nav-height-mobile: 60px;
-    --max-width: 560px;
-    --content-padding: 16px;
-    --content-padding-mobile: 14px;
+    /* أبعاد مدمجة ورشيقة */
+    --header-height: 52px;
+    --bottom-nav-height: 56px;
+    --max-width: 540px;
+    --content-padding: 14px;
 
-    /* تباعد الأسطر القرآنية (يُستخدم في صفحة عرض المصحف) */
-    --quran-line-height: 52px;
-    --quran-line-gap: 4px;
-
-    /* الانتقالات */
-    --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-    --transition-slow: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    --transition-bounce: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    /* سرعة عالية في الحركة والتنقل */
+    --transition: all 0.15s ease-out;
 }
 
-/* ===== الوضع الداكن (موحّد لكل صفحات المشروع) ===== */
+/* ==================================================================
+   الوضع الداكن الزجاجي الرشيق (Midnight Petrol & Herbal Glass)
+   ================================================================== */
 [data-theme="dark"] {
-    --color-bg: #1F2E2E;         /* بترولي داكن ومطفي مريح جداً للعين ليلاً */
-    --color-bg-card: #273A3A;    /* درجة أفتح قليلاً للبطاقات لتبرز عن الخلفية */
-    --color-bg-secondary: #223333;
-    --color-bg-hover: #2D4242;
+    --color-bg: #091D26;             /* بترولي ليلي عميق */
+    --color-bg-card: rgba(18, 85, 123, 0.35); 
+    --color-bg-secondary: #0E2A36;
+    --color-bg-hover: rgba(16, 130, 141, 0.22);
 
-    --color-text: #E8E2D5;       /* نصوص واضحة وناعمة باللون البيج الدافئ */
-    --color-text-light: #D0CDAF;
-    --color-text-lighter: #88A5A5;
+    --color-primary: #10828D;        
+    --color-primary-light: #259AA6;
+    --color-primary-dark: #12557B;
 
-    --color-border: #2F4444;
-    --color-border-light: #283B3B;
+    --color-herbal: #A3E062;        
+    --color-herbal-light: #C4F082;
+    --color-herbal-dark: #7DB83C;
 
-    --shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
-    --shadow-card: 0 4px 16px rgba(0, 0, 0, 0.25);
-    --shadow-hover: 0 6px 24px rgba(0, 0, 0, 0.35);
-    --shadow-strong: 0 10px 32px rgba(0, 0, 0, 0.45);
+    --color-text: #F2F3EE;           
+    --color-text-light: #B8C9D3;     
+    --color-text-lighter: #7A9AA8;
+
+    --color-border: rgba(16, 130, 141, 0.28);
+    --color-border-light: rgba(163, 224, 98, 0.22);
+
+    --glass-bg: rgba(9, 29, 38, 0.85);
+    --glass-card: rgba(14, 42, 54, 0.78);
+    --shadow-card: 0 8px 24px -4px rgba(0, 0, 0, 0.45);
+    --shadow-glow: 0 0 20px rgba(163, 224, 98, 0.25);
 }
+
+/* ==================================================================
+   تأثيرات حركية أنيقة
+   ================================================================== */
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scaleIn {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+* {
+    -webkit-tap-highlight-color: transparent;
+    box-sizing: border-box;
+}
+
+body {
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+

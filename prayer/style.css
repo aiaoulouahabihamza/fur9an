@@ -22,21 +22,27 @@ i {
     line-height: 1;
 }
 
-/* ===== الشريط العلوي ===== */
+/* ===== الشريط العلوي - تصميم زجاجي أنيق مدمج ===== */
 .main-header {
     position: fixed;
     top: 0;
     right: 0;
     left: 0;
     z-index: 1000;
-    background: var(--color-bg-card);
-    backdrop-filter: blur(16px);
-    box-shadow: var(--shadow);
-    padding: 10px 18px;
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    box-shadow: 0 2px 12px rgba(88, 133, 133, 0.05);
+    padding: 4px 14px;
     height: var(--header-height);
     display: flex;
     align-items: center;
-    border-bottom: 1px solid rgba(81, 73, 53, 0.06);
+    border-bottom: 1px solid var(--glass-border);
+}
+
+[data-theme="dark"] .main-header {
+    background: var(--glass-bg-dark);
+    border-bottom: 1px solid var(--glass-border-dark);
 }
 
 .header-content {
@@ -47,15 +53,15 @@ i {
 }
 
 .back-btn {
-    background: none;
-    border: none;
+    background: rgba(255, 255, 255, 0.25);
+    border: 1px solid rgba(255, 255, 255, 0.3);
     color: var(--color-text);
     cursor: pointer;
-    padding: 6px;
-    border-radius: 50%;
+    padding: 4px;
+    border-radius: var(--radius-sm);
     transition: var(--transition);
-    width: 40px;
-    height: 40px;
+    width: 34px;
+    height: 34px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -63,7 +69,7 @@ i {
 }
 
 .back-btn i {
-    font-size: 22px;
+    font-size: 16px;
 }
 
 .header-title {
@@ -71,8 +77,8 @@ i {
 }
 
 .header-title h1 {
-    font-size: 18px;
-    font-weight: 800;
+    font-size: 17px;
+    font-weight: 600;
     color: var(--color-text);
     line-height: 1.2;
 }
@@ -116,11 +122,19 @@ i {
 
 /* ===== الموقع ===== */
 .location-card {
-    background: var(--color-bg-card);
-    border-radius: var(--radius);
+    background: rgba(245, 243, 238, 0.55);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    border-radius: var(--radius-lg);
     padding: 16px 18px;
-    box-shadow: var(--shadow-card);
+    box-shadow: 0 4px 16px rgba(88, 133, 133, 0.04);
     margin-bottom: 14px;
+}
+
+[data-theme="dark"] .location-card {
+    background: rgba(39, 58, 58, 0.45);
+    border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .location-display {
@@ -187,50 +201,50 @@ i {
 
 /* ===== الصلاة القادمة ===== */
 .next-prayer-card {
-    background-image: linear-gradient(135deg, rgba(88, 133, 133, 0.35), rgba(31, 46, 46, 0.7)), 
+    background-image: linear-gradient(135deg, rgba(88, 133, 133, 0.45), rgba(31, 46, 46, 0.8)), 
                       url('../data/images/masjed.jpg');
     background-size: cover;
     background-position: center bottom;
-    border-radius: var(--radius);
-    padding: 24px;
-    margin-bottom: 14px;
+    border-radius: var(--radius-xl);
+    padding: 20px;
+    margin-bottom: 12px;
     color: white;
     text-align: center;
-    box-shadow: 0 8px 30px rgba(15, 30, 30, 0.3);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 8px 24px rgba(15, 30, 30, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.15);
 }
 
 .next-prayer-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-size: 13px;
-    opacity: 0.8;
-    margin-bottom: 6px;
+    font-size: 12px;
+    opacity: 0.85;
+    margin-bottom: 4px;
 }
 
 .next-prayer-header i {
-    font-size: 20px;
+    font-size: 18px;
 }
 
 .next-prayer-name {
-    font-size: 30px;
-    font-weight: 800;
-    margin: 4px 0;
+    font-size: 22px;
+    font-weight: 700;
+    margin: 2px 0;
 }
 
 .next-prayer-countdown {
-    font-size: 38px;
-    font-weight: 800;
+    font-size: 26px;
+    font-weight: 700;
     font-family: var(--font-mono-digits);
-    letter-spacing: 2px;
-    margin: 6px 0;
+    letter-spacing: 1.5px;
+    margin: 4px 0;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .next-prayer-time {
-    font-size: 16px;
-    opacity: 0.8;
+    font-size: 15px;
+    opacity: 0.85;
 }
 
 /* ألوان أيقونات الصلوات المخصصة */
@@ -260,18 +274,25 @@ i {
 .prayer-item {
     display: flex;
     align-items: center;
-    gap: 14px;
-    background: var(--color-bg-card);
-    border-radius: var(--radius);
-    padding: 12px 16px;
-    box-shadow: var(--shadow-card);
+    gap: 12px;
+    background: rgba(245, 243, 238, 0.55);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    border-radius: var(--radius-lg);
+    padding: 10px 14px;
+    box-shadow: 0 2px 10px rgba(88, 133, 133, 0.03);
     transition: var(--transition);
-    border-right: 4px solid transparent;
+}
+
+[data-theme="dark"] .prayer-item {
+    background: rgba(39, 58, 58, 0.45);
+    border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .prayer-item.active {
-    border-right-color: var(--color-gold);
-    background: var(--color-bg);
+    border-color: var(--color-primary);
+    background: rgba(88, 133, 133, 0.1);
 }
 
 .prayer-icon {
@@ -530,8 +551,7 @@ i {
     margin-bottom: 14px;
     box-shadow: var(--shadow-card);
     display: flex;
-    align-items: center;
-    justify-content: space-between;
+    flex-direction: column;
     gap: 12px;
 }
 
@@ -542,7 +562,7 @@ i {
 }
 
 .adhan-title-info i {
-    font-size: 24px;
+    font-size: 22px;
     color: var(--color-primary);
 }
 
@@ -553,18 +573,54 @@ i {
 
 .adhan-title {
     font-weight: 700;
-    font-size: 14px;
+    font-size: 13px;
     color: var(--color-text);
 }
 
 .adhan-desc {
-    font-size: 11px;
+    font-size: 10px;
     color: var(--color-text-lighter);
+}
+
+.reciter-select-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--color-bg);
+    padding: 6px 12px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border-light);
+}
+
+.reciter-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--color-text-light);
+    white-space: nowrap;
+}
+
+.reciter-label i {
+    font-size: 12px;
+    margin-left: 4px;
+    color: var(--color-primary);
+}
+
+.reciter-select {
+    flex: 1;
+    background: none;
+    border: none;
+    outline: none;
+    font-family: var(--font-family);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--color-text);
+    cursor: pointer;
 }
 
 .adhan-controls {
     display: flex;
     align-items: center;
+    justify-content: flex-end;
     gap: 8px;
 }
 

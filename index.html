@@ -3,20 +3,20 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>المشكاة - التطبيق الإسلامي الشامل</title>
+    <title>منصة الفرقان - الرقمية الشاملة</title>
     
     <!-- الوسوم الوصفية والمواصفات الكاملة كأندرويد وتطبيق ويب -->
-    <meta name="description" content="تطبيق المشكاة الإسلامي الشامل - القرآن الكريم والمصحف التفاعلي برواية ورش، تفسير الآيات، الأذكار النبوية اليومية، السنة النبوية المطهرة ومواقيت الصلاة الدقيقة." />
-    <meta name="theme-color" content="#8c6239" />
+    <meta name="description" content="منصة الفرقان الرقمية الشاملة - المصحف الشريف بالخط المغربي، تفسير الآيات، الأذكار النبوية اليومية، السنة النبوية المطهرة ومواقيت الصلاة الدقيقة." />
+    <meta name="theme-color" content="#0284C7" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-    <meta name="apple-mobile-web-app-title" content="المشكاة" />
+    <meta name="apple-mobile-web-app-title" content="الفرقان" />
     
     <!-- الأيقونات الرسمية للموقع والتطبيق -->
     <link rel="icon" type="image/png" href="/data/images/logo.png" />
     <link rel="apple-touch-icon" href="/data/images/logo.png" />
     
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Amiri:wght@400;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
     
     <link rel="stylesheet" href="variables.css" />
@@ -41,13 +41,13 @@
     <header class="main-header" id="mainHeader">
         <div class="header-content">
             <div class="header-right">
-                <span class="logo-title">المشكاة</span>
+                <span class="logo-title"><i class="fa-solid fa-seedling" style="font-size:22px; color:var(--color-herbal); vertical-align:middle; margin-left:6px;"></i> منصة الفرقان</span>
             </div>
             <div class="header-left">
-                <button class="header-btn theme-toggle" id="themeToggle">
+                <button class="header-btn theme-toggle" id="themeToggle" title="تبديل المظهر">
                     <i class="fa-solid fa-moon"></i>
                 </button>
-                <button class="header-btn profile-btn" id="profileBtn">
+                <button class="header-btn profile-btn" id="profileBtn" title="الملف الشخصي">
                     <i class="fa-solid fa-circle-user"></i>
                 </button>
             </div>
@@ -62,7 +62,6 @@
         <!-- ===== التاريخ ===== -->
         <section class="card date-card">
             <div class="date-hijri">
-                <span class="date-label">اليوم والتاريخ الهجري</span>
                 <span class="date-value" id="hijriDate">جاري التحميل...</span>
             </div>
         </section>
@@ -70,8 +69,8 @@
         <!-- ===== أوقات الصلاة ===== -->
         <section class="card prayer-mini" onclick="window.location.href='./prayer/index.html'" style="cursor: pointer;">
             <div class="prayer-mini-header">
-                <span><i class="fa-regular fa-clock"></i> أوقات الصلاة</span>
-                <span class="location-mini-text" id="miniLocationDisplay" style="font-size: 13px; color: var(--color-primary); font-weight: 500;"><i class="fa-solid fa-location-dot"></i> جاري التحديد...</span>
+                <span><i class="fa-solid fa-mosque"></i> مواقيت الصلاة اليومية</span>
+                <span class="location-mini-text" id="miniLocationDisplay"><i class="fa-solid fa-location-dot"></i> جاري التحديد...</span>
             </div>
             <div class="prayer-mini-grid" id="prayerMiniGrid">
                 <div class="prayer-mini-item"><span class="p-name">الفجر</span><span class="p-time" id="miniFajr">--</span></div>
@@ -85,12 +84,12 @@
         <!-- ===== آخر قراءة ===== -->
         <section class="card recent-card">
             <div class="card-header">
-                <span><i class="fa-solid fa-clock-rotate-left"></i> آخر قراءة</span>
+                <span><i class="fa-solid fa-book-bookmark"></i> واصل القراءة</span>
             </div>
             <div class="recent-content" id="recentContent">
                 <div class="empty-state">
                     <i class="fa-solid fa-book-open"></i>
-                    <span>لم تقرأ شيئاً بعد</span>
+                    <span>لم تبدأ القراءة بعد، اختر سورة من المصحف</span>
                 </div>
             </div>
         </section>
@@ -98,7 +97,7 @@
         <!-- ===== أدعية من القرآن والسنة ===== -->
         <section class="card dua-card" id="duaCard">
             <div class="card-header">
-                <span><i class="fa-solid fa-hand"></i> أدعية من القرآن والسنة</span>
+                <span><i class="fa-solid fa-hands-praying"></i> دعاء اليوم</span>
                 <span class="dua-source" id="duaSource">--</span>
             </div>
             <div class="dua-content">
@@ -112,8 +111,8 @@
         <!-- ===== آية وعبرة ===== -->
         <section class="card verse-card" id="verseCard">
             <div class="verse-header">
-                <i class="fa-solid fa-book-open"></i>
-                <span>آية وعبرة</span>
+                <i class="fa-solid fa-wheat-awn"></i>
+                <span>آية وتأمل</span>
             </div>
             <div class="verse-content">
                 <p class="verse-text" id="verseText">جاري التحميل...</p>
@@ -122,35 +121,43 @@
             </div>
         </section>
 
-        <!-- ===== زر المزيد ===== -->
-        <button class="card more-btn" id="moreBtn">
-            <i class="fa-solid fa-grip"></i>
-            <span>المزيد من الخدمات</span>
-        </button>
+        <!-- ===== شبكة الخدمات الإيمانية ===== -->
+        <section class="card services-card">
+            <div class="card-header">
+                <span><i class="fa-solid fa-grip"></i> الخدمات الإيمانية الشاملة</span>
+            </div>
+            <div class="services-grid">
+                <a href="./recitations/index.html" class="service-item">
+                    <i class="fa-solid fa-headphones"></i>
+                    <span>التلاوات والاستماع</span>
+                </a>
+                <a href="./stories/index.html" class="service-item">
+                    <i class="fa-solid fa-book-open-reader"></i>
+                    <span>قصص الأنبياء والصحابة</span>
+                </a>
+                <button class="service-item" onclick="showToast('هذه الميزة في طور التنفيذ')">
+                    <i class="fa-solid fa-kaaba"></i>
+                    <span>السيرة النبوية</span>
+                </button>
+                <button class="service-item" onclick="showToast('هذه الميزة في طور التنفيذ')">
+                    <i class="fa-solid fa-scale-balanced"></i>
+                    <span>الفتاوى والدروس</span>
+                </button>
+                <button class="service-item" onclick="showToast('هذه الميزة في طور التنفيذ')">
+                    <i class="fa-solid fa-compass"></i>
+                    <span>اتجاه القبلة</span>
+                </button>
+                <button class="service-item" onclick="showToast('هذه الميزة في طور التنفيذ')">
+                    <i class="fa-solid fa-sliders"></i>
+                    <span>الإعدادات</span>
+                </button>
+            </div>
+        </section>
 
     </main>
 
-    <!-- ========================================= -->
-    <!-- مودال المزيد                             -->
-    <!-- ========================================= -->
-    <div class="modal-overlay" id="moreModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2><i class="fa-solid fa-grip"></i> المزيد</h2>
-                <button class="modal-close" id="modalClose">
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
-            </div>
-            <div class="modal-grid">
-                <button class="modal-item"><i class="fa-solid fa-book"></i><span>المكتبة</span></button>
-                <button class="modal-item"><i class="fa-solid fa-users"></i><span>القصص</span></button>
-                <button class="modal-item"><i class="fa-solid fa-flag"></i><span>السيرة</span></button>
-                <button class="modal-item"><i class="fa-solid fa-scale-balanced"></i><span>الفتاوى</span></button>
-                <button class="modal-item"><i class="fa-regular fa-compass"></i><span>القبلة</span></button>
-                <button class="modal-item"><i class="fa-solid fa-gear"></i><span>الإعدادات</span></button>
-            </div>
-        </div>
-    </div>
+    <!-- حاوية التنبيهات (Toast) -->
+    <div class="toast-container" id="toastContainer"></div>
 
     <!-- ========================================= -->
     <!-- مودال البروفايل                          -->
@@ -165,11 +172,11 @@
             </div>
             <div class="profile-body">
                 <div class="profile-avatar">
-                    <i class="fa-solid fa-circle-user"></i>
+                    <i class="fa-solid fa-user-gear"></i>
                 </div>
                 <div class="profile-info">
                     <div class="profile-field">
-                        <label>الاسم</label>
+                        <label>الاسم الكريـم</label>
                         <input type="text" id="profileName" placeholder="أدخل اسمك" />
                     </div>
                     <div class="profile-field">
@@ -192,7 +199,7 @@
     <nav class="bottom-nav" id="bottomNav">
         <div class="nav-items">
             <a href="./quran/index.html" class="nav-item" data-nav="quran">
-                <i class="fa-solid fa-book-open"></i>
+                <i class="fa-solid fa-book-quran"></i>
                 <span>القرآن</span>
             </a>
             <a href="./adkar/index.html" class="nav-item" data-nav="adkar">
@@ -200,9 +207,7 @@
                 <span>الأذكار</span>
             </a>
             <a href="./index.html" class="nav-item nav-home active" data-nav="home">
-                <div class="nav-home-icon">
-                    <i class="fa-solid fa-house"></i>
-                </div>
+                <i class="fa-solid fa-house"></i>
                 <span>الرئيسية</span>
             </a>
             <a href="./prayer/index.html" class="nav-item" data-nav="prayer">
@@ -217,54 +222,48 @@
     </nav>
 
     <!-- ========================================= -->
-    <!-- نافذة تحديثات تطبيق المشكاة المنبثقة     -->
+    <!-- نافذة الترحيب والتحديثات                 -->
     <!-- ========================================= -->
-    <div class="mishkat-popup-overlay" id="mishkatUpdatePopup">
-        <div class="mishkat-popup-card">
-            <div class="mishkat-popup-header">
-                <img src="./data/images/logo.png" alt="شعار المشكاة" class="mishkat-popup-logo" onerror="this.src='https://images.unsplash.com/photo-1590076247563-7ad401df4241?auto=format&fit=crop&q=80&w=120';">
-                <h3 class="mishkat-popup-title">تطبيق المشكاة</h3>
-                <span class="mishkat-popup-subtitle">التحديث الجديد v2.0.0</span>
+    <div class="furqan-popup-overlay" id="furqanUpdatePopup">
+        <div class="furqan-popup-card">
+            <div class="furqan-popup-header">
+                <img src="./data/images/logo.png" alt="شعار الفرقان" class="furqan-popup-logo">
+                <h3 class="furqan-popup-title" style="color:var(--color-primary); font-size: 26px;">منصة الفرقان</h3>
+                <span class="furqan-popup-subtitle" style="background: rgba(14,165,233,0.15); color: var(--color-primary); padding: 4px 14px; border-radius: 20px; font-weight: 800; font-size: 12px; display: inline-block; margin-top: 4px;">الهوية  كليا  v1.0.0</span>
             </div>
-            <div class="mishkat-popup-body">
-                <p class="mishkat-popup-welcome">مرحباً بك في تطبيق <strong>المشكاة</strong>. يسعدنا أن نُقدّم لك التحديث الجديد كلياً الذي يتضمن تحسينات هندسية فائقة للأداء والاستقرار:</p>
-                <ul class="mishkat-popup-features">
+            <div class="furqan-popup-body" style="margin-top: 16px;">
+                <p class="furqan-popup-welcome" style="margin-bottom: 16px; color: var(--color-text-light);">أهلاً بك في <strong>منصة الفرقان</strong> بالحلّة الجديدة المميزة والانيقة:</p>
+                <ul class="furqan-popup-features" style="list-style: none; padding: 0;">
                     <li>
-                        <i class="fa-solid fa-circle-check"></i>
+                        <i class="fa-solid fa-droplet"></i>
                         <div>
-                            <strong>دقة بالغة في التفسير والبيان:</strong>
-                            <span>تمت معالجة مشكلة انزياح تفسير الآية كلياً لضمان الحصول على تفسير الآية التي اخترتها بدقة فائقة.</span>
+                            <strong>تصميم زجاجي عصري (Glassmorphism):</strong>
+                            <span>خلفية بيضاء نقية مع ألواح زجاجية شفافة بتأثير الضباب ودرجات الأزرق السماوي والأخضر العشبي النضر.</span>
                         </div>
                     </li>
                     <li>
-                        <i class="fa-solid fa-circle-check"></i>
+                        <i class="fa-solid fa-scroll"></i>
                         <div>
-                            <strong>تحسين تحميل السنة النبوية:</strong>
-                            <span>تم تقسيم الأبواب الضخمة في كتب الحديث التسعة لتجنب بطء الخادم وضمان سرعة تحميل لحظية للأحاديث.</span>
+                            <strong>المصحف بالخط المغربي الأصيل:</strong>
+                            <span>المحافظة التامة والكاملة على الخط المغربي للآيات القرآنية الشريفة.</span>
                         </div>
                     </li>
                     <li>
-                        <i class="fa-solid fa-circle-check"></i>
+                        <i class="fa-solid fa-compass"></i>
                         <div>
-                            <strong>دعم كامل لتطبيقات الأندرويد:</strong>
-                            <span>توافق تام وتحديد متطور للموقع الجغرافي داخل التطبيق مع إدارة ذكية لزر الرجوع الفعلي للهاتف.</span>
-                        </div>
-                    </li>
-                    <li>
-                        <i class="fa-solid fa-circle-check"></i>
-                        <div>
-                            <strong>تخزين مؤقت ذكي وشامل:</strong>
-                            <span>تسريع تحميل صفحات القرآن الكريم وتثبيت الأذكار، الأحاديث، وأيقونات Font Awesome للعمل بدون إنترنت بكفاءة عالية.</span>
+                            <strong>أيقونات حديثة وشريط زجاجي عائم:</strong>
+                            <span>شريط ناڤيجيشن زجاجي عائم بأيقونات عصرية وسلسة.</span>
                         </div>
                     </li>
                 </ul>
             </div>
-            <div class="mishkat-popup-footer">
-                <button class="mishkat-popup-btn" id="closeMishkatPopup">ابدأ الاستخدام</button>
+            <div class="furqan-popup-footer" style="margin-top: 16px;">
+                <button class="btn-primary" id="closeFurqanPopup">استكشف الفرقان الآن</button>
             </div>
         </div>
     </div>
 
+    <script src="/cordova-bridge.js"></script>
     <script src="main.js"></script>
 </body>
 </html>

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mishkat-cache-v3';
+const CACHE_NAME = 'mishkat-cache-v4';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
@@ -13,6 +13,17 @@ const STATIC_ASSETS = [
   '/data/images/page_frame_box_brown.svg',
   '/data/images/surah_frame_brown.svg',
   
+  '/audio/adhan_makkah.mp3',
+  '/audio/adhan_yasser.mp3',
+  '/audio/adhan_qatami.mp3',
+  '/audio/adhan_afasy.mp3',
+
+  '/data/font/Amiri-Regular.ttf',
+  '/data/font/Cairo-Regular.ttf',
+  '/data/font/aalmaghrabi.ttf',
+  '/data/font/HAFS_Regular.otf',
+  '/data/font/DecoType_Thuluth_Regular.ttf',
+
   '/quran/index.html',
   '/quran/main.js',
   '/quran/style.css',

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>المشكاة - أوقات الصلاة</title>
+    <title>الفرقان - مواقيت الصلاة</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
@@ -129,14 +129,25 @@
             <div class="adhan-title-info">
                 <i class="fa-solid fa-volume-high"></i>
                 <div class="adhan-text-wrapper">
-                    <span class="adhan-title">الأذان بصوت الشيخ علي ملا</span>
-                    <span class="adhan-desc">استمع إلى أذان الحرم المكي الشريف العذب</span>
+                    <span class="adhan-title" id="selectedReciterTitle">أذان الحرم المكي الشريف</span>
+                    <span class="adhan-desc">اختر مؤذنك المفضل للأذان والتشغيل في أندرويد</span>
                 </div>
             </div>
+
+            <!-- اختيار المؤذن من بين 3 أصوات -->
+            <div class="reciter-select-wrapper">
+                <label for="reciterSelect" class="reciter-label"><i class="fa-solid fa-user-ninja"></i> المؤذن:</label>
+                <select id="reciterSelect" class="reciter-select">
+                    <option value="makkah" selected>أذان الحرم المكي الشريف (على ملا)</option>
+                    <option value="qatami">الشيخ ناصر القطامي</option>
+                    <option value="afasy">الشيخ مشاري العفاسي</option>
+                </select>
+            </div>
+
             <div class="adhan-controls">
                 <button class="btn-play-adhan" id="playAdhanBtn">
                     <i class="fa-solid fa-play"></i>
-                    <span id="playAdhanText">تشغيل</span>
+                    <span id="playAdhanText">تجربة الأذان</span>
                 </button>
             </div>
         </div>
@@ -184,13 +195,30 @@
                 </div>
                 <div class="city-suggestions" id="citySuggestions"></div>
                 <div id="modalLocationStatus" style="display: none; padding: 10px; margin-bottom: 12px; border-radius: var(--radius); font-size: 13px; text-align: center; font-weight: 500; transition: var(--transition);"></div>
-                <button type="button" id="detectLocationModalBtn" class="btn-primary full-width">
+                <button type="button" id="detectLocationModalBtn" class="btn-primary full-width" style="margin-bottom: 16px;">
                     <i class="fa-solid fa-crosshairs"></i> تحديد الموقع تلقائيا
                 </button>
+
+                <div class="calc-method-wrapper" style="margin-top: 8px;">
+                    <label for="calcMethodSelect" style="display: block; font-size: 13px; font-weight: 600; color: var(--color-text); margin-bottom: 8px;"><i class="fa-solid fa-calculator"></i> طريقة الحساب الفلكي:</label>
+                    <select id="calcMethodSelect" class="reciter-select" style="width: 100%; margin-bottom: 8px;">
+                        <option value="0" selected>الافتراضي (حسب البلد والموقع)</option>
+                        <option value="4">أم القرى، مكة المكرمة</option>
+                        <option value="5">الهيئة العامة المصرية للمساحة</option>
+                        <option value="3">رابطة العالم الإسلامي</option>
+                        <option value="2">الجمعية الإسلامية لأمريكا الشمالية (ISNA)</option>
+                        <option value="1">جامعة العلوم الإسلامية، كراتشي</option>
+                        <option value="8">منطقة الخليج</option>
+                        <option value="9">دولة الكويت</option>
+                        <option value="10">دولة قطر</option>
+                        <option value="13">رئاسة الشؤون الدينية بتركيا</option>
+                    </select>
+                </div>
             </div>
         </div>
     </div>
 
+    <script src="/cordova-bridge.js"></script>
     <script src="/prayer/main.js"></script>
 </body>
 </html>

@@ -752,7 +752,18 @@ async function renderHadithsStage() {
     }
 
     pageItems.forEach(h => {
-        const text = h.arab || '';
+        let text = (h.arab || '').trim();
+        // معالجة وتصحيح الأحرف الزائدة ببدء الحديث الشريف (مثل وحدثنا -> حدثنا)
+        text = text.replace(/^وحدثنا\s+/, 'حدثنا ')
+                   .replace(/^وحدثني\s+/, 'حدثني ')
+                   .replace(/^وحدثناه\s+/, 'حدثناه ')
+                   .replace(/^وأخبرنا\s+/, 'أخبرنا ')
+                   .replace(/^وأنبأنا\s+/, 'أنبأنا ');
+        
+        if (/^و\s+[\u0621-\u064A]/.test(text) && !text.startsWith('واست') && !text.startsWith('والله')) {
+            text = text.substring(1).trim();
+        }
+
         const num = h.number || '--';
         const idText = h.id || '';
 
@@ -784,7 +795,7 @@ async function renderHadithsStage() {
                     <i class="fa-regular fa-copy"></i> نسخ الحديث
                 </button>
                 <button class="hadith-action-btn share-hadith" data-text="${text.replace(/"/g, '&quot;')}">
-                    <i class="fa-regular fa-share-nodes"></i> مشاركة
+                    <i class="fa-solid fa-share-nodes"></i> مشاركة الحديث
                 </button>
             </div>
         `;
